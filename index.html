@@ -1,0 +1,3337 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>يلا بينا — Live Party Challenge</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --neon-blue: #00e5ff;
+            --neon-purple: #b400ff;
+            --neon-pink: #ff2bd6;
+            --bg-0: #05060f;
+            --bg-1: #0a0b1e;
+            --glass: rgba(20, 10, 50, .35);
+            --glass-brd: rgba(120, 90, 255, .35);
+            --text: #e8ecff;
+            --muted: #8a90c0;
+            --good: #3dffa2;
+            --bad: #ff4d6d;
+            --gold: #ffd700;
+            --grad: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+            --grad2: linear-gradient(135deg, var(--neon-purple), var(--neon-pink));
+            --shadow-neon: 0 0 30px rgba(0, 229, 255, .35), 0 0 60px rgba(180, 0, 255, .25);
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+        html,
+        body {
+            height: 100%;
+            background: var(--bg-0);
+            color: var(--text);
+            font-family: 'Tajawal', system-ui, sans-serif;
+            overflow: hidden
+        }
+        #bg-canvas {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            background: radial-gradient(1200px 800px at 30% 20%, rgba(180, 0, 255, .25), transparent 60%), radial-gradient(1000px 700px at 80% 80%, rgba(0, 229, 255, .22), transparent 60%), linear-gradient(180deg, #02030a, #0a0730)
+        }
+        #mouse-light {
+            position: fixed;
+            pointer-events: none;
+            width: 500px;
+            height: 500px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 229, 255, .15), transparent 60%);
+            transform: translate(-50%, -50%);
+            z-index: 1;
+            filter: blur(20px);
+            transition: opacity .3s
+        }
+        #particles {
+            position: fixed;
+            inset: 0;
+            z-index: 1;
+            pointer-events: none
+        }
+        #app {
+            position: relative;
+            z-index: 2;
+            height: 100%;
+            display: flex;
+            flex-direction: column
+        }
+        .glass {
+            background: var(--glass);
+            backdrop-filter: blur(18px) saturate(140%);
+            border: 1px solid var(--glass-brd);
+            border-radius: 20px;
+            box-shadow: var(--shadow-neon)
+        }
+        .btn {
+            position: relative;
+            font-family: inherit;
+            font-weight: 700;
+            padding: 12px 22px;
+            border-radius: 14px;
+            border: 1px solid var(--glass-brd);
+            background: linear-gradient(135deg, rgba(0, 229, 255, .15), rgba(180, 0, 255, .15));
+            color: var(--text);
+            cursor: pointer;
+            letter-spacing: .5px;
+            transition: transform .15s ease, box-shadow .3s ease, background .3s;
+            overflow: hidden
+        }
+        .btn:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 0 25px rgba(0, 229, 255, .5), 0 0 40px rgba(180, 0, 255, .4)
+        }
+        .btn:active {
+            transform: translateY(0) scale(.98)
+        }
+        .btn.primary {
+            background: var(--grad);
+            border: none;
+            color: #000
+        }
+        .btn.ghost {
+            background: transparent
+        }
+        .btn.danger {
+            background: linear-gradient(135deg, #ff2b6d, #b400ff)
+        }
+        .btn.gold {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            border: none;
+            color: #000
+        }
+        .btn.sm {
+            padding: 8px 14px;
+            font-size: .85rem;
+            border-radius: 10px
+        }
+        .btn:disabled {
+            opacity: .4;
+            cursor: not-allowed;
+            transform: none !important
+        }
+        .input {
+            width: 100%;
+            padding: 12px 14px;
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid var(--glass-brd);
+            border-radius: 12px;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color .2s, box-shadow .2s
+        }
+        .input:focus {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 15px rgba(0, 229, 255, .35)
+        }
+        label {
+            display: block;
+            font-size: .85rem;
+            color: var(--muted);
+            margin: 8px 0 4px
+        }
+        #auth-screen {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px
+        }
+        .auth-card {
+            width: min(460px, 100%);
+            padding: 32px
+        }
+        .auth-card h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            text-align: center;
+            background: var(--grad);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 6px;
+            letter-spacing: 2px
+        }
+        .auth-card .sub {
+            text-align: center;
+            color: var(--muted);
+            margin-bottom: 18px
+        }
+        .tabs {
+            display: flex;
+            gap: 6px;
+            background: rgba(255, 255, 255, .04);
+            padding: 6px;
+            border-radius: 12px;
+            margin-bottom: 16px
+        }
+        .tab {
+            flex: 1;
+            padding: 10px;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            color: var(--muted);
+            transition: .25s
+        }
+        .tab.active {
+            background: var(--grad);
+            color: #000
+        }
+        .link {
+            color: var(--neon-blue);
+            cursor: pointer;
+            text-decoration: none;
+            font-size: .9rem
+        }
+        .link:hover {
+            text-decoration: underline
+        }
+        .topbar {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--glass-brd);
+            background: rgba(10, 7, 30, .6);
+            backdrop-filter: blur(20px);
+            z-index: 5;
+            flex-wrap: wrap
+        }
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: 1.4rem;
+            background: var(--grad);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: 3px
+        }
+        .nav {
+            display: flex;
+            gap: 6px;
+            flex: 1;
+            margin: 0 20px;
+            flex-wrap: wrap
+        }
+        .nav .n {
+            padding: 8px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            color: var(--muted);
+            font-weight: 700;
+            transition: .2s;
+            border: 1px solid transparent
+        }
+        .nav .n:hover {
+            color: var(--text);
+            background: rgba(255, 255, 255, .05)
+        }
+        .nav .n.active {
+            color: #000;
+            background: var(--grad)
+        }
+        .wallet {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap
+        }
+        .chip {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid var(--glass-brd);
+            font-weight: 700;
+            font-size: .9rem
+        }
+        .chip.coin {
+            color: #ffd447
+        }
+        .chip.gem {
+            color: #5be9ff
+        }
+        .chip.lvl {
+            color: #ffb0ff
+        }
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--grad);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            color: #000;
+            cursor: pointer;
+            font-family: 'Orbitron';
+            border: 2px solid var(--neon-blue);
+            box-shadow: 0 0 12px var(--neon-blue);
+            position: relative;
+            font-size: 1.2rem
+        }
+        .avatar .verify {
+            position: absolute;
+            bottom: -4px;
+            right: -4px;
+            font-size: .75rem;
+            color: #1da1f2;
+            background: #000;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #1da1f2
+        }
+        .page {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            animation: fadeIn .4s ease
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px)
+            }
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+        .grid {
+            display: grid;
+            gap: 18px
+        }
+        .g2 {
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr))
+        }
+        .g3 {
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr))
+        }
+        .g4 {
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr))
+        }
+        .card {
+            padding: 22px;
+            border-radius: 20px;
+            transition: transform .3s, box-shadow .3s;
+            transform-style: preserve-3d;
+            background: var(--glass);
+            backdrop-filter: blur(14px);
+            border: 1px solid var(--glass-brd)
+        }
+        .card:hover {
+            transform: translateY(-4px) rotateX(2deg) rotateY(-2deg);
+            box-shadow: 0 20px 40px rgba(0, 229, 255, .25), 0 0 40px rgba(180, 0, 255, .25)
+        }
+        .card h3 {
+            font-family: 'Orbitron';
+            margin-bottom: 8px;
+            background: var(--grad);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent
+        }
+        .card p {
+            color: var(--muted);
+            font-size: .92rem;
+            line-height: 1.5
+        }
+        .hero {
+            padding: 36px;
+            border-radius: 26px;
+            background: linear-gradient(135deg, rgba(0, 229, 255, .15), rgba(180, 0, 255, .15));
+            border: 1px solid var(--glass-brd);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 22px
+        }
+        .hero::before {
+            content: "";
+            position: absolute;
+            inset: -2px;
+            background: conic-gradient(from 0deg, transparent, var(--neon-blue), transparent, var(--neon-purple), transparent);
+            animation: spin 8s linear infinite;
+            z-index: -1;
+            filter: blur(20px);
+            opacity: .6
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg)
+            }
+        }
+        .hero h2 {
+            font-family: 'Orbitron';
+            font-size: 2rem;
+            margin-bottom: 8px
+        }
+        .hero p {
+            color: var(--muted);
+            max-width: 600px
+        }
+        .modal-back {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .7);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn .2s
+        }
+        .modal {
+            width: min(560px, 100%);
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 28px
+        }
+        .modal h2 {
+            font-family: 'Orbitron';
+            margin-bottom: 14px;
+            background: var(--grad);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent
+        }
+        .close-x {
+            float: left;
+            cursor: pointer;
+            font-size: 1.6rem;
+            color: var(--muted)
+        }
+        .close-x:hover {
+            color: var(--bad)
+        }
+        #toasts {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+            gap: 10px
+        }
+        .toast {
+            padding: 12px 18px;
+            border-radius: 12px;
+            background: var(--glass);
+            border: 1px solid var(--glass-brd);
+            backdrop-filter: blur(20px);
+            box-shadow: var(--shadow-neon);
+            animation: slideIn .3s;
+            font-weight: 700;
+            min-width: 220px
+        }
+        .toast.good {
+            border-color: var(--good)
+        }
+        .toast.bad {
+            border-color: var(--bad)
+        }
+        .toast.gold {
+            border-color: var(--gold)
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0
+            }
+            to {
+                transform: none;
+                opacity: 1
+            }
+        }
+        .chatbox {
+            display: flex;
+            flex-direction: column;
+            height: 360px;
+            padding: 14px
+        }
+        .chat-msgs {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            padding: 6px
+        }
+        .msg {
+            padding: 6px 10px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, .05);
+            max-width: 80%;
+            font-size: .9rem;
+            animation: fadeIn .2s
+        }
+        .msg .who {
+            color: var(--neon-blue);
+            font-weight: 700;
+            margin-inline-end: 6px
+        }
+        .chat-input {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px
+        }
+        .bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(255, 255, 255, .06);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid var(--glass-brd)
+        }
+        .bar>div {
+            height: 100%;
+            background: var(--grad);
+            border-radius: 20px;
+            transition: width .4s;
+            box-shadow: 0 0 12px var(--neon-blue)
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse
+        }
+        th,
+        td {
+            padding: 10px 12px;
+            text-align: right;
+            border-bottom: 1px solid var(--glass-brd);
+            font-size: .92rem
+        }
+        th {
+            color: var(--neon-blue);
+            font-family: 'Orbitron';
+            font-size: .85rem;
+            letter-spacing: 1px
+        }
+        tr:hover td {
+            background: rgba(255, 255, 255, .03)
+        }
+        .room-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, .03);
+            border: 1px solid var(--glass-brd);
+            margin-bottom: 8px;
+            transition: .2s
+        }
+        .room-item:hover {
+            background: rgba(0, 229, 255, .08);
+            transform: translateX(-4px)
+        }
+        .event-card {
+            padding: 26px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, rgba(180, 0, 255, .25), rgba(255, 43, 214, .15));
+            border: 2px solid var(--neon-purple);
+            text-align: center;
+            animation: pulse 2s infinite, scaleIn .5s;
+            box-shadow: 0 0 40px rgba(180, 0, 255, .6)
+        }
+        @keyframes pulse {
+            0%,
+            100% {
+                box-shadow: 0 0 30px rgba(180, 0, 255, .5)
+            }
+            50% {
+                box-shadow: 0 0 60px rgba(0, 229, 255, .7)
+            }
+        }
+        @keyframes scaleIn {
+            from {
+                transform: scale(.7);
+                opacity: 0
+            }
+            to {
+                transform: scale(1);
+                opacity: 1
+            }
+        }
+        .event-card h2 {
+            font-family: 'Orbitron';
+            font-size: 1.8rem;
+            margin-bottom: 8px
+        }
+        .timer {
+            font-family: 'Orbitron';
+            font-size: 3rem;
+            text-align: center;
+            background: var(--grad);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 20px rgba(0, 229, 255, .5)
+        }
+        .player-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, .04);
+            margin-bottom: 6px;
+            border: 1px solid var(--glass-brd)
+        }
+        .player-row.top {
+            border-color: gold;
+            background: linear-gradient(90deg, rgba(255, 215, 0, .15), transparent)
+        }
+        .player-row .dev-badge {
+            background: linear-gradient(135deg, #1da1f2, #0d8bd9);
+            color: #fff;
+            padding: 1px 8px;
+            border-radius: 12px;
+            font-size: .7rem;
+            font-weight: 700;
+            margin-inline-start: 6px
+        }
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: .75rem;
+            font-weight: 700;
+            background: var(--grad);
+            color: #000
+        }
+        .badge.gold {
+            background: linear-gradient(135deg, #ffd700, #ff8c00);
+            color: #000
+        }
+        .badge.verified {
+            background: #1da1f2;
+            color: #fff
+        }
+        .welcome-anim {
+            text-align: center;
+            padding: 40px
+        }
+        .welcome-anim h1 {
+            font-family: 'Orbitron';
+            font-size: 2.4rem;
+            background: var(--grad);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 12px;
+            animation: glow 2s ease-in-out infinite alternate
+        }
+        @keyframes glow {
+            from {
+                filter: drop-shadow(0 0 10px var(--neon-blue))
+            }
+            to {
+                filter: drop-shadow(0 0 25px var(--neon-purple))
+            }
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--grad);
+            border-radius: 4px
+        }
+        .hidden {
+            display: none !important
+        }
+        .row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap
+        }
+        .stat {
+            display: flex;
+            flex-direction: column;
+            padding: 14px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, .04);
+            border: 1px solid var(--glass-brd)
+        }
+        .stat .v {
+            font-family: 'Orbitron';
+            font-size: 1.6rem;
+            background: var(--grad);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent
+        }
+        .stat .l {
+            color: var(--muted);
+            font-size: .85rem
+        }
+        .avatar-picker {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 8px;
+            margin: 12px 0
+        }
+        .ap {
+            aspect-ratio: 1;
+            border-radius: 12px;
+            background: var(--grad);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron';
+            font-weight: 900;
+            color: #000;
+            cursor: pointer;
+            border: 2px solid transparent;
+            font-size: 1.4rem
+        }
+        .ap.sel {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 15px var(--neon-blue)
+        }
+
+        /* Challenge UI */
+        .challenge-display {
+            padding: 24px;
+            border-radius: 24px;
+            background: linear-gradient(145deg, rgba(0, 229, 255, .08), rgba(180, 0, 255, .08));
+            border: 2px solid var(--glass-brd);
+            margin-bottom: 20px;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center
+        }
+        .challenge-display .cat-tag {
+            display: inline-block;
+            padding: 4px 16px;
+            border-radius: 20px;
+            font-size: .75rem;
+            font-weight: 700;
+            background: var(--grad);
+            color: #000;
+            margin-bottom: 12px
+        }
+        .challenge-display h2 {
+            font-family: 'Orbitron';
+            font-size: 1.8rem;
+            margin-bottom: 8px
+        }
+        .challenge-display .desc {
+            color: var(--muted);
+            font-size: 1.05rem;
+            max-width: 600px
+        }
+        .challenge-interact {
+            padding: 20px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, .03);
+            border: 1px solid var(--glass-brd);
+            margin-top: 14px;
+            min-height: 120px
+        }
+        .vote-options {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center
+        }
+        .vote-options .btn {
+            min-width: 100px
+        }
+        .question-box {
+            padding: 16px;
+            border-radius: 16px;
+            background: rgba(0, 229, 255, .05);
+            border: 1px solid var(--glass-brd);
+            margin: 8px 0
+        }
+        .question-box .q {
+            font-size: 1.1rem;
+            font-weight: 700
+        }
+        .question-box .q-options {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px
+        }
+        .question-box .q-options .btn {
+            min-width: 80px
+        }
+        .player-answer-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 12px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, .03);
+            margin-bottom: 6px;
+            border: 1px solid var(--glass-brd)
+        }
+        .player-answer-row .status {
+            font-size: 1.2rem
+        }
+        .chaos-effect {
+            font-size: 2.5rem;
+            animation: scaleIn .6s
+        }
+        .stream-race {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center
+        }
+        .stream-race .racer {
+            padding: 12px 20px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, .05);
+            border: 1px solid var(--glass-brd);
+            text-align: center;
+            min-width: 100px
+        }
+        .stream-race .racer .name {
+            font-weight: 700
+        }
+        .stream-race .racer .score {
+            font-family: 'Orbitron';
+            font-size: 1.6rem;
+            color: var(--neon-blue)
+        }
+        .reward-popup {
+            font-size: 3rem;
+            animation: scaleIn .5s
+        }
+    </style>
+</head>
+<body>
+    <canvas id="bg-canvas"></canvas>
+    <canvas id="particles"></canvas>
+    <div id="mouse-light"></div>
+
+    <div id="app"></div>
+    <div id="toasts"></div>
+
+    <script>
+        /* ============================================================
+           يلا بينا — Live Party Challenge Platform
+           ============================================================ */
+
+        /* ---------- Storage ---------- */
+        const DB = {
+            key: 'yalla_db_v2',
+            data: null,
+            load() {
+                try { this.data = JSON.parse(localStorage.getItem(this.key)) || this.default(); } catch (e) { this.data =
+                        this.default(); }
+                return this.data;
+            },
+            default() {
+                return {
+                    users: {},
+                    emails: {},
+                    session: null,
+                    rooms: {},
+                    chat: {},
+                    settings: { music: .4, sfx: .6, muted: false },
+                    // legacy: leaderboard computed on the fly
+                };
+            },
+            save() { localStorage.setItem(this.key, JSON.stringify(this.data)); },
+        };
+        DB.load();
+        setInterval(() => DB.save(), 3000);
+
+        /* ---------- Utilities ---------- */
+        const $ = (sel, root = document) => root.querySelector(sel);
+        const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+        const el = (tag, attrs = {}, ...children) => {
+            const n = document.createElement(tag);
+            for (const k in attrs) {
+                if (k === 'class') n.className = attrs[k];
+                else if (k === 'html') n.innerHTML = attrs[k];
+                else if (k.startsWith('on')) n.addEventListener(k.slice(2).toLowerCase(), attrs[k]);
+                else n.setAttribute(k, attrs[k]);
+            }
+            children.flat().forEach(c => n.append(c?.nodeType ? c : document.createTextNode(c)));
+            return n;
+        };
+        const uid = () => Math.random().toString(36).slice(2, 10);
+        const roomCode = () => Math.random().toString(36).slice(2, 8).toUpperCase();
+        const now = () => new Date().toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit' });
+        const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+        const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]]; } return a; };
+        const pick = (a) => a[Math.floor(Math.random() * a.length)];
+
+        function toast(msg, type = '') {
+            const t = el('div', { class: `toast ${type}` }, msg);
+            $('#toasts').append(t);
+            setTimeout(() => { t.style.opacity = 0;
+                t.style.transform = 'translateX(120%)'; }, 2500);
+            setTimeout(() => t.remove(), 3000);
+        }
+
+        /* ---------- Sound ---------- */
+        const Sound = {
+            ctx: null,
+            init() { if (!this.ctx) this.ctx = new(window.AudioContext || window.webkitAudioContext)(); },
+            play(freq = 440, dur = .12, type = 'sine', vol = .15) {
+                if (DB.data.settings.muted) return;
+                this.init();
+                const o = this.ctx.createOscillator(),
+                    g = this.ctx.createGain();
+                o.type = type;
+                o.frequency.value = freq;
+                g.gain.value = vol * DB.data.settings.sfx;
+                o.connect(g);
+                g.connect(this.ctx.destination);
+                o.start();
+                g.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + dur);
+                o.stop(this.ctx.currentTime + dur);
+            },
+            click() { this.play(880, .05, 'square', .08) },
+            win() { [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => this.play(f, .2, 'triangle', .2), i *
+                    100)) },
+            lose() { [400, 300, 200].forEach((f, i) => setTimeout(() => this.play(f, .25, 'sawtooth', .15), i *
+                    120)) },
+            vote() { this.play(660, .1, 'triangle', .15) },
+            join() { this.play(880, .15, 'sine', .15);
+                setTimeout(() => this.play(1320, .1, 'sine', .12), 100) },
+            leave() { this.play(440, .15, 'sine', .12) },
+            reward() { [784, 988, 1319].forEach((f, i) => setTimeout(() => this.play(f, .15, 'triangle', .18), i *
+                    80)) },
+            chaos() { [200, 300, 400, 500].forEach((f, i) => setTimeout(() => this.play(f, .1, 'sawtooth', .12), i *
+                    60)) },
+            boo() { this.play(200, .3, 'sawtooth', .1) },
+        };
+        document.addEventListener('click', () => Sound.init(), { once: true });
+
+        /* ---------- Background ---------- */
+        (function initBG() {
+            const c = $('#particles'),
+                ctx = c.getContext('2d');
+            const bc = $('#bg-canvas');
+
+            function resize() { c.width = innerWidth;
+                c.height = innerHeight;
+                bc.width = innerWidth;
+                bc.height = innerHeight; }
+            resize();
+            addEventListener('resize', resize);
+            const parts = Array.from({ length: 60 }, () => ({
+                x: Math.random() * innerWidth,
+                y: Math.random() * innerHeight,
+                vx: (Math.random() - .5) * .4,
+                vy: (Math.random() - .5) * .4,
+                r: Math.random() * 2 + 1,
+                c: Math.random() > .5 ? '0,229,255' : '180,0,255'
+            }));
+
+            function loop() {
+                ctx.clearRect(0, 0, c.width, c.height);
+                parts.forEach(p => {
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    if (p.x < 0 || p.x > c.width) p.vx *= -1;
+                    if (p.y < 0 || p.y > c.height) p.vy *= -1;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(${p.c},.8)`;
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = `rgba(${p.c},1)`;
+                    ctx.fill();
+                });
+                requestAnimationFrame(loop);
+            }
+            loop();
+            const ml = $('#mouse-light');
+            addEventListener('mousemove', e => { ml.style.left = e.clientX + 'px';
+                ml.style.top = e.clientY + 'px' });
+        })();
+
+        /* ---------- Auth ---------- */
+        const Auth = {
+            hash(s) { let h = 0; for (let i = 0; i < s.length; i++) { h = ((h << 5) - h + s.charCodeAt(i)) | 0 } return h
+                    .toString(36); },
+            isFounder(u) { return u && u.username === 'YAMEN'; },
+            register({ username, email, password }) {
+                username = username.trim();
+                email = email.trim().toLowerCase();
+                if (!username || username.length < 3) throw new Error('اسم المستخدم قصير جدًا');
+                if (!/^\S+@\S+\.\S+$/.test(email)) throw new Error('البريد غير صالح');
+                if (password.length < 4) throw new Error('كلمة السر قصيرة');
+                if (DB.data.users[username]) throw new Error('اسم المستخدم مستخدم بالفعل');
+                if (DB.data.emails[email]) throw new Error('البريد مستخدم بالفعل');
+                const isFounder = (username === 'YAMEN' && password === 'YAMEN');
+                const user = {
+                    username,
+                    email,
+                    pass: this.hash(password),
+                    avatar: username[0].toUpperCase(),
+                    avatarColor: Math.floor(Math.random() * 360),
+                    coins: isFounder ? 999999999 : 500,
+                    gems: isFounder ? 999999999 : 20,
+                    xp: 0,
+                    level: 1,
+                    stats: { wins: 0, losses: 0, matches: 0 },
+                    achievements: [],
+                    inventory: [],
+                    history: [],
+                    firstLogin: true,
+                    createdAt: Date.now(),
+                    dailyClaimed: null,
+                    isFounder: isFounder,
+                    title: isFounder ? 'مطور اللعبة' : null,
+                };
+                DB.data.users[username] = user;
+                DB.data.emails[email] = username;
+                DB.save();
+                return user;
+            },
+            login({ who, password, remember }) {
+                who = who.trim();
+                let username = DB.data.users[who] ? who : DB.data.emails[who.toLowerCase()];
+                const user = DB.data.users[username];
+                if (!user) throw new Error('الحساب غير موجود');
+                if (user.pass !== this.hash(password)) throw new Error('كلمة السر خاطئة');
+                DB.data.session = username;
+                if (remember) localStorage.setItem('yalla_remember', username);
+                DB.save();
+                return user;
+            },
+            logout() { DB.data.session = null;
+                DB.save(); },
+            current() { return DB.data.session ? DB.data.users[DB.data.session] : null; },
+            reset(email, newPass) {
+                const u = DB.data.emails[email.trim().toLowerCase()];
+                if (!u) throw new Error('البريد غير مسجل');
+                DB.data.users[u].pass = this.hash(newPass);
+                DB.save();
+            },
+            update(patch) {
+                const u = this.current();
+                if (!u) return;
+                Object.assign(u, patch);
+                DB.save();
+            }
+        };
+
+        /* ---------- Economy ---------- */
+        function grantXP(n) {
+            const u = Auth.current();
+            if (!u || Auth.isFounder(u)) return;
+            u.xp += n;
+            while (u.xp >= u.level * 100) { u.xp -= u.level * 100;
+                u.level++;
+                u.coins += 100;
+                toast(`ارتقيت للمستوى ${u.level}! +100 عملة`, 'good');
+                Sound.reward(); }
+            DB.save();
+            renderTopBar();
+        }
+
+        function grantCoins(n) {
+            const u = Auth.current();
+            if (!u || Auth.isFounder(u)) return;
+            u.coins += n;
+            DB.save();
+            renderTopBar();
+        }
+
+        function grantGems(n) {
+            const u = Auth.current();
+            if (!u || Auth.isFounder(u)) return;
+            u.gems += n;
+            DB.save();
+            renderTopBar();
+        }
+
+        function hasUnlimited(u) { return Auth.isFounder(u); }
+
+        function spendCoins(u, n) {
+            if (hasUnlimited(u)) return true;
+            if (u.coins < n) return false;
+            u.coins -= n;
+            DB.save();
+            renderTopBar();
+            return true;
+        }
+
+        function spendGems(u, n) {
+            if (hasUnlimited(u)) return true;
+            if (u.gems < n) return false;
+            u.gems -= n;
+            DB.save();
+            renderTopBar();
+            return true;
+        }
+
+        function unlockAch(id, title) {
+            const u = Auth.current();
+            if (!u || u.achievements.includes(id)) return;
+            u.achievements.push(id);
+            toast(`🏆 إنجاز جديد: ${title}`, 'good');
+            Sound.reward();
+            DB.save();
+        }
+
+        /* ---------- Rooms ---------- */
+        const Rooms = {
+            create({ name, maxPlayers, host, mode = 'party' }) {
+                const code = roomCode();
+                const room = { code, name, maxPlayers: clamp(+maxPlayers, 6, 18), host, mode, players: [{ name: host,
+                        bot: false, score: 0 }], createdAt: Date.now(), state: 'lobby' };
+                DB.data.rooms[code] = room;
+                DB.data.chat[code] = [];
+                DB.save();
+                return room;
+            },
+            join(code, player) {
+                const r = DB.data.rooms[code];
+                if (!r) throw new Error('الغرفة غير موجودة');
+                if (r.players.find(p => p.name === player)) return r;
+                if (r.players.length >= r.maxPlayers) throw new Error('الغرفة ممتلئة');
+                r.players.push({ name: player, bot: false, score: 0 });
+                DB.save();
+                return r;
+            },
+            leave(code, player) {
+                const r = DB.data.rooms[code];
+                if (!r) return;
+                r.players = r.players.filter(p => p.name !== player);
+                if (r.players.length === 0) delete DB.data.rooms[code];
+                DB.save();
+            },
+            list() { return Object.values(DB.data.rooms).sort((a, b) => b.createdAt - a.createdAt); },
+            addBots(code, n) {
+                const r = DB.data.rooms[code];
+                if (!r) return;
+                const names = ['نجم', 'صاروخ', 'ظل', 'برق', 'عاصفة', 'تنين', 'فارس', 'قناص', 'شبح', 'ملك', 'بطل', 'أسطورة',
+                    'سهم', 'رمح', 'درع'
+                ];
+                for (let i = 0; i < n && r.players.length < r.maxPlayers; i++) {
+                    r.players.push({ name: names[i % names.length] + '_بوت' + (i + 1), bot: true, score: 0,
+                        skill: .3 + Math.random() * .7 });
+                }
+                DB.save();
+            },
+            chat(code, who, text) {
+                if (!DB.data.chat[code]) DB.data.chat[code] = [];
+                DB.data.chat[code].push({ who, text, t: now() });
+                DB.save();
+            }
+        };
+
+        /* ============================================================
+           LIVE PARTY CHALLENGE ENGINE — 300+ challenges
+           ============================================================ */
+        const PartyEngine = {
+            // --- Challenge banks ---
+            voting: [],
+            questions: [],
+            personal: [],
+            chaos: [],
+            stream: [],
+            punishment: [],
+            reward: [],
+
+            history: [],
+            round: 0,
+            maxRounds: 8,
+            timer: 30,
+            state: 'idle',
+            players: [],
+            votes: {},
+            answers: {},
+            usedQuestions: [],
+            usedPersonal: [],
+            currentChallenge: null,
+            results: {},
+            multiplier: 1,
+            logs: [],
+            gameOver: false,
+
+            // --- Build challenge databases ---
+            init() {
+                this.buildVoting();
+                this.buildQuestions();
+                this.buildPersonal();
+                this.buildChaos();
+                this.buildStream();
+                this.buildPunishment();
+                this.buildReward();
+            },
+
+            buildVoting() {
+                this.voting = [
+                    { id: 'v_kick', name: '🗳️ طرد لاعب', desc: 'صوّت لطرد لاعب من الغرفة!', cat: 'تصويت',
+                    fn: (g) => this.voteKick(g) },
+                    { id: 'v_steal', name: '🗳️ سرقة عملات', desc: 'صوّت لمن تسرق منه 50 عملة!', cat: 'تصويت',
+                    fn: (g) => this.voteSteal(g) },
+                    { id: 'v_give', name: '🗳️ هدية عملات', desc: 'صوّت لمن تعطيه 30 عملة!', cat: 'تصويت',
+                    fn: (g) => this.voteGive(g) },
+                    { id: 'v_swap', name: '🗳️ تبديل لاعبين', desc: 'صوّت لتبديل مركزين!', cat: 'تصويت',
+                    fn: (g) => this.voteSwap(g) },
+                    { id: 'v_mute', name: '🗳️ كتم صوت', desc: 'صوّت لكتم لاعب لمدة جولة!', cat: 'تصويت',
+                    fn: (g) => this.voteMute(g) },
+                    { id: 'v_protect', name: '🗳️ حماية لاعب', desc: 'صوّت لحماية لاعب من العقوبات!', cat: 'تصويت',
+                    fn: (g) => this.voteProtect(g) },
+                    { id: 'v_funny', name: '🗳️ أطرف لاعب', desc: 'صوّت لأطرف لاعب في الغرفة!', cat: 'تصويت',
+                    fn: (g) => this.voteFunny(g) },
+                    { id: 'v_unlucky', name: '🗳️ أكثر لاعب حظاً سيئاً', desc: 'صوّت لأكثر لاعب حظ سيء!', cat: 'تصويت',
+                        fn: (g) => this.voteUnlucky(g) },
+                    { id: 'v_reverse', name: '🗳️ عكس الترتيب', desc: 'صوّت لعكس ترتيب اللاعبين!', cat: 'تصويت',
+                        fn: (g) => this.voteReverse(g) },
+                    { id: 'v_double', name: '🗳️ مضاعفة النقاط', desc: 'صوّت لمضاعفة نقاط لاعب!', cat: 'تصويت',
+                    fn: (g) => this.voteDouble(g) },
+                    { id: 'v_half', name: '🗳️ تنصيف النقاط', desc: 'صوّت لتنصيف نقاط لاعب!', cat: 'تصويت',
+                    fn: (g) => this.voteHalf(g) },
+                ];
+            },
+
+            buildQuestions() {
+                const qs = (q, a, opts, cat) => ({ q, answer: a, options: shuffle([a, ...opts]), cat });
+                const cats = ['عامة', 'رياضة', 'أفلام', 'تقنية', 'جغرافيا', 'تاريخ', 'علوم', 'مضحكة', 'خدعة'];
+                const pool = [
+                    // عامة
+                    qs('ما هو عاصمة مصر؟', 'القاهرة', ['الرياض', 'الخرطوم', 'تونس'], 'عامة'),
+                    qs('كم عدد ألوان قوس قزح؟', '7', ['6', '8', '5'], 'عامة'),
+                    qs('ما هو أكبر محيط في العالم؟', 'المحيط الهادئ', ['الأطلسي', 'الهندي', 'المتجمد'], 'عامة'),
+                    qs('ما هو أسرع حيوان بري؟', 'الفهد', ['الأسد', 'النمر', 'الغزال'], 'عامة'),
+                    qs('كم عدد أيام السنة الكبيسة؟', '366', ['365', '364', '360'], 'عامة'),
+                    qs('ما هو أثقل معدن؟', 'الأوزميوم', ['الذهب', 'البلاتين', 'الحديد'], 'عامة'),
+                    qs('من هو مؤسس شركة مايكروسوفت؟', 'بيل غيتس', ['ستيف جوبز', 'مارك زوكربيرج', 'إيلون ماسك'], 'عامة'),
+                    qs('ما هي عملة اليابان؟', 'الين', ['الدولار', 'اليورو', 'الريال'], 'عامة'),
+                    qs('كم عدد القارات؟', '7', ['6', '5', '8'], 'عامة'),
+                    qs('ما هي أكبر جزيرة في العالم؟', 'غرينلاند', ['مدغشقر', 'بورنيو', 'أستراليا'], 'عامة'),
+                    // رياضة
+                    qs('كم عدد لاعبين كرة القدم في الملعب لكل فريق؟', '11', ['10', '12', '9'], 'رياضة'),
+                    qs('من فاز بكأس العالم 2022؟', 'الأرجنتين', ['فرنسا', 'البرازيل', 'ألمانيا'], 'رياضة'),
+                    qs('ما هي أسرع رياضة؟', 'كرة المضرب', ['كرة القدم', 'السباحة', 'الجري'], 'رياضة'),
+                    qs('من هو أفضل لاعب كرة قدم في العالم 2023؟', 'ميسي', ['رونالدو', 'مبابي', 'هالاند'], 'رياضة'),
+                    qs('كم عدد أشواط كرة السلة؟', '4', ['2', '3', '5'], 'رياضة'),
+                    qs('ما هي لعبة التنس؟', 'كرة المضرب', ['كرة القدم', 'كرة السلة', 'البيسبول'], 'رياضة'),
+                    qs('من فاز بجائزة الكرة الذهبية 2023؟', 'ميسي', ['رونالدو', 'مبابي', 'هالاند'], 'رياضة'),
+                    qs('ما هي أطول مسافة في الجري الأولمبي؟', 'ماراثون', ['100 متر', '400 متر', '1500 متر'], 'رياضة'),
+                    qs('كم عدد فرق الدوري الإنجليزي الممتاز؟', '20', ['18', '22', '16'], 'رياضة'),
+                    qs('من هو حارس مرمى فرنسا الشهير؟', 'لوريس', ['نافاس', 'بوفون', 'كاسياس'], 'رياضة'),
+                    // أفلام
+                    qs('من هو بطل فيلم "العراب"؟', 'مارلون براندو', ['آل باتشينو', 'روبرت دي نيرو', 'جاك نيكلسون'], 'أفلام'),
+                    qs('ما هو أعلى فيلم ربحاً في التاريخ؟', 'أفاتار', ['تيتانيك', 'الملوك', 'المنتقمون'], 'أفلام'),
+                    qs('من هو الممثل الذي لعب دور "جوكر" في فيلم "The Dark Knight"؟', 'هيث ليدجر', ['جواكين فينيكس',
+                        'جاك نيكلسون', 'مارك هاميل'
+                    ], 'أفلام'),
+                    qs('ما هو فيلم "The Matrix"؟', 'فيلم خيال علمي', ['فيلم أكشن', 'فيلم رعب', 'فيلم كوميدي'], 'أفلام'),
+                    qs('من هو مخرج فيلم "Titanic"؟', 'جيمس كاميرون', ['ستيفن سبيلبرغ', 'كريستوفر نولان', 'كوينتن تارانتينو'],
+                        'أفلام'),
+                    qs('ما هو فيلم "The Lion King"؟', 'فيلم رسوم متحركة', ['فيلم واقعي', 'فيلم وثائقي', 'فيلم قصير'],
+                    'أفلام'),
+                    qs('من لعب دور "سبايدرمان"؟', 'توبي ماغواير', ['أندرو غارفيلد', 'توم هولاند', 'جيك جيلنهال'], 'أفلام'),
+                    qs('ما هو فيلم "Inception"؟', 'فيلم خيال علمي', ['فيلم أكشن', 'فيلم دراما', 'فيلم كوميدي'], 'أفلام'),
+                    qs('من هو مخرج فيلم "Avatar"؟', 'جيمس كاميرون', ['ستيفن سبيلبرغ', 'كريستوفر نولان', 'بيتر جاكسون'],
+                        'أفلام'),
+                    qs('ما هو فيلم "The Godfather"؟', 'فيلم دراما وجريمة', ['فيلم أكشن', 'فيلم كوميدي', 'فيلم رعب'],
+                        'أفلام'),
+                    // تقنية
+                    qs('ما هي لغة البرمجة الأكثر استخداماً؟', 'جافا سكريبت', ['بايثون', 'جافا', 'سي++'], 'تقنية'),
+                    qs('ما هو نظام تشغيل أجهزة آيفون؟', 'iOS', ['أندرويد', 'ويندوز', 'لينكس'], 'تقنية'),
+                    qs('ما هو اختصار "AI"؟', 'الذكاء الاصطناعي', ['الذكاء البشري', 'التعلم الآلي', 'الروبوتات'], 'تقنية'),
+                    qs('من هو مؤسس فيسبوك؟', 'مارك زوكربيرج', ['بيل غيتس', 'ستيف جوبز', 'إيلون ماسك'], 'تقنية'),
+                    qs('ما هي وحدة قياس سرعة المعالج؟', 'جيجاهيرتز', ['ميجابايت', 'جيجابايت', 'تيرابايت'], 'تقنية'),
+                    qs('ما هو الـ "URL"؟', 'رابط الموقع', ['بريد إلكتروني', 'بروتوكول', 'خادم'], 'تقنية'),
+                    qs('من هو مؤسس شركة تسلا؟', 'إيلون ماسك', ['مارك زوكربيرج', 'بيل غيتس', 'جيف بيزوس'], 'تقنية'),
+                    qs('ما هي لغة البرمجة التي طورتها جوجل؟', 'غو', ['جافا', 'بايثون', 'سي#'], 'تقنية'),
+                    qs('ما هو نظام تشغيل أندرويد؟', 'نظام تشغيل للهواتف', ['نظام تشغيل للحواسيب', 'نظام تشغيل للخوادم',
+                        'نظام تشغيل للأجهزة اللوحية'
+                    ], 'تقنية'),
+                    qs('ما هي خدمة "التمويل الجماعي"؟', 'جمع تبرعات من الناس', ['قرض من البنك', 'استثمار من شركة',
+                        'منحة حكومية'
+                    ], 'تقنية'),
+                    // جغرافيا
+                    qs('ما هي أكبر دولة في العالم من حيث المساحة؟', 'روسيا', ['كندا', 'الصين', 'الولايات المتحدة'], 'جغرافيا'),
+                    qs('ما هو أطول نهر في العالم؟', 'نهر النيل', ['الأمازون', 'اليانغتسي', 'المسيسيبي'], 'جغرافيا'),
+                    qs('ما هي أصغر دولة في العالم؟', 'الفاتيكان', ['موناكو', 'ناورو', 'سان مارينو'], 'جغرافيا'),
+                    qs('ما هي أعلى قمة في العالم؟', 'إيفرست', ['كليمنجارو', 'ماونت إليوت', 'دينالي'], 'جغرافيا'),
+                    qs('ما هي أكبر بحيرة في العالم؟', 'بحيرة قزوين', ['بحيرة فيكتوريا', 'بحيرة بايكال', 'بحيرة تنجانيقا'],
+                        'جغرافيا'),
+                    qs('ما هي عاصمة أستراليا؟', 'كانبرا', ['سيدني', 'ملبورن', 'بريسبان'], 'جغرافيا'),
+                    qs('ما هي أطول سلسلة جبال في العالم؟', 'جبال الأنديز', ['جبال الهيمالايا', 'جبال الروكي', 'جبال الألب'],
+                        'جغرافيا'),
+                    qs('ما هي أصغر قارة؟', 'أستراليا', ['أوروبا', 'أمريكا الجنوبية', 'أنتاركتيكا'], 'جغرافيا'),
+                    qs('ما هي أكبر صحراء في العالم؟', 'الصحراء الكبرى', ['صحراء الربع الخالي', 'صحراء غوبي',
+                        'صحراء كالاهاري'
+                    ], 'جغرافيا'),
+                    qs('ما هي عاصمة البرازيل؟', 'برازيليا', ['ريو دي جانيرو', 'ساو باولو', 'بوينس آيرس'], 'جغرافيا'),
+                    // تاريخ
+                    qs('من هو أول خليفة في الإسلام؟', 'أبو بكر الصديق', ['عمر بن الخطاب', 'عثمان بن عفان', 'علي بن أبي طالب'],
+                        'تاريخ'),
+                    qs('متى سقطت الدولة العثمانية؟', '1922', ['1918', '1930', '1900'], 'تاريخ'),
+                    qs('من هو مؤسس الدولة العباسية؟', 'أبو العباس السفاح', ['المنصور', 'المهدي', 'هارون الرشيد'], 'تاريخ'),
+                    qs('من هو قائد معركة حطين؟', 'صلاح الدين الأيوبي', ['نور الدين زنكي', 'الأشرف', 'الظاهر بيبرس'], 'تاريخ'),
+                    qs('متى كانت الثورة الفرنسية؟', '1789', ['1776', '1800', '1799'], 'تاريخ'),
+                    qs('من هو أول رئيس للولايات المتحدة؟', 'جورج واشنطن', ['أبراهام لنكولن', 'توماس جيفرسون',
+                        'جون آدامز'], 'تاريخ'),
+                    qs('ما هي الحضارة التي بنت الأهرامات؟', 'المصرية القديمة', ['اليونانية', 'الرومانية', 'الفينيقية'],
+                        'تاريخ'),
+                    qs('من هو مؤسس مدينة بغداد؟', 'المنصور', ['هارون الرشيد', 'المأمون', 'المعتصم'], 'تاريخ'),
+                    qs('متى كانت حرب المائة عام؟', '1337-1453', ['1300-1400', '1400-1500', '1200-1300'], 'تاريخ'),
+                    qs('من هو قائد معركة مؤتة؟', 'خالد بن الوليد', ['زيد بن حارثة', 'جعفر بن أبي طالب', 'عبد الله بن رواحة'],
+                        'تاريخ'),
+                    // علوم
+                    qs('ما هو أقرب كوكب إلى الشمس؟', 'عطارد', ['الزهرة', 'الأرض', 'المريخ'], 'علوم'),
+                    qs('ما هو أكبر كوكب في المجموعة الشمسية؟', 'المشتري', ['زحل', 'أورانوس', 'نبتون'], 'علوم'),
+                    qs('ما هو العنصر الأكثر وفرة في الكون؟', 'الهيدروجين', ['الهيليوم', 'الأكسجين', 'الكربون'], 'علوم'),
+                    qs('ما هي أصغر وحدة في المادة؟', 'الذرة', ['البروتون', 'الإلكترون', 'النيوترون'], 'علوم'),
+                    qs('من هو مكتشف الجاذبية؟', 'نيوتن', ['آينشتاين', 'غاليليو', 'كوبرنيكوس'], 'علوم'),
+                    qs('ما هو أكبر عضو في جسم الإنسان؟', 'الجلد', ['الكبد', 'الدماغ', 'القلب'], 'علوم'),
+                    qs('ما هي عاصمة الدماغ البشري؟', 'الخلايا العصبية', ['النبضات الكهربائية', 'الدوبامين',
+                        'السيروتونين'], 'علوم'),
+                    qs('من هو مكتشف البنسلين؟', 'ألكسندر فليمنغ', ['لويس باستور', 'روبرت كوخ', 'جوزف ليستر'], 'علوم'),
+                    qs('ما هي أسرع سرعة في الكون؟', 'سرعة الضوء', ['سرعة الصوت', 'سرعة البرق', 'سرعة الكواكب'], 'علوم'),
+                    qs('ما هو العنصر الأساسي في الماء؟', 'الهيدروجين والأكسجين', ['الهيدروجين والنيتروجين',
+                        'الأكسجين والنيتروجين', 'الكربون والأكسجين'
+                    ], 'علوم'),
+                    // مضحكة
+                    qs('لماذا لا تستطيع الأسماك ركوب الدراجة؟', 'لأنها تفتقر إلى الأرجل', ['لأنها تسبح', 'لأنها صغيرة',
+                        'لأنها لا تحب'
+                    ], 'مضحكة'),
+                    qs('ماذا قال البحر للشاطئ؟', 'لا تتركني وحيداً', ['مرحباً', 'وداعاً', 'أحبك'], 'مضحكة'),
+                    qs('ما هو أكثر شيء يخفيه الناس؟', 'أسرارهم', ['أموالهم', 'جوالاتهم', 'مفاتيحهم'], 'مضحكة'),
+                    qs('ماذا تفعل عندما ترى فيلماً رعباً؟', 'تغلق عينيك', ['تصرخ', 'تركض', 'تضحك'], 'مضحكة'),
+                    qs('لماذا لا يتكلم الكمبيوتر؟', 'لأنه لا يملك فماً', ['لأنه مشغول', 'لأنه خائف', 'لأنه لا يعرف'],
+                        'مضحكة'),
+                    qs('ماذا قال الكتكوت لأمه؟', 'أنت جميلة', ['أنا جائع', 'أنا خائف', 'أنا نائم'], 'مضحكة'),
+                    qs('لماذا لا ينام الجدران؟', 'لأنها لا تملك عيوناً', ['لأنها تعمل', 'لأنها تحب السهر',
+                        'لأنها لا تشعر بالتعب'
+                    ], 'مضحكة'),
+                    qs('ما هو الشيء الذي كلما أخذت منه كبر؟', 'الحفرة', ['الظل', 'الصوت', 'الضوء'], 'مضحكة'),
+                    qs('ماذا قالت البقرة للحليب؟', 'أنت ابني', ['مرحباً', 'وداعاً', 'أحبك'], 'مضحكة'),
+                    qs('لماذا يحمل الحمار مظلة؟', 'لأنه لا يريد أن يبتل', ['لأنه يحب المطر', 'لأنه يخاف الشمس',
+                        'لأنه يريد أن يكون أنيقاً'
+                    ], 'مضحكة'),
+                    // خدعة
+                    qs('كم شهر في السنة يحتوي على 28 يوماً؟', 'كل الشهور', ['فبراير فقط', '6 أشهر', '3 أشهر'], 'خدعة'),
+                    qs('ما هو الشيء الذي يكسو الناس وهو عارٍ؟', 'الإبرة', ['الخيط', 'القماش', 'الورق'], 'خدعة'),
+                    qs('ما هو الشيء الذي لا يبلل بالماء؟', 'الظل', ['النار', 'الهواء', 'الرمال'], 'خدعة'),
+                    qs('أين يوجد البحر بدون ماء؟', 'على الخريطة', ['في الصحراء', 'في الجبال', 'في الأفلام'], 'خدعة'),
+                    qs('ما هو الشيء الذي يقرأ وليس له عيون؟', 'الكتاب', ['الجوال', 'الحاسوب', 'الجرائد'], 'خدعة'),
+                    qs('ما هو الشيء الذي يمشي بلا رجلين ويطير بلا أجنحة؟', 'الوقت', ['الرياح', 'الحلم', 'الفكرة'], 'خدعة'),
+                    qs('ما هو الشيء الذي كلما زاد نقص؟', 'العمر', ['المال', 'الوقت', 'الصحة'], 'خدعة'),
+                    qs('ما هو الشيء الذي يسمع بلا أذنين ويتكلم بلا فم؟', 'الصدى', ['الراديو', 'التلفاز', 'الجوال'], 'خدعة'),
+                    qs('ما هو الشيء الذي يكون أخضر في الحقل وأسود في السوق وأحمر في البيت؟', 'الشاي', ['القهوة', 'العصير',
+                        'الحليب'
+                    ], 'خدعة'),
+                    qs('ما هو الشيء الذي تحمله ويحملك؟', 'الحذاء', ['السيارة', 'الدراجة', 'الحافلة'], 'خدعة'),
+                ];
+                this.questions = pool;
+            },
+
+            buildPersonal() {
+                this.personal = [
+                    { id: 'p_type', name: '⌨️ اكتب كلمة', desc: 'اكتب كلمة في 5 ثواني!', cat: 'تحدي شخصي',
+                    fn: (g, p) => this.pType(g, p) },
+                    { id: 'p_guess', name: '🔢 خمن الرقم', desc: 'خمن رقماً بين 1 و 100!', cat: 'تحدي شخصي',
+                    fn: (g, p) => this.pGuess(g, p) },
+                    { id: 'p_click', name: '🖱️ اضغط الزر', desc: 'اضغط الزر الصحيح في أسرع وقت!', cat: 'تحدي شخصي',
+                        fn: (g, p) => this.pClick(g, p) },
+                    { id: 'p_puzzle', name: '🧩 حل اللغز', desc: 'حل اللغز البسيط!', cat: 'تحدي شخصي', fn: (g, p) => this
+                            .pPuzzle(g, p) },
+                    { id: 'p_memorize', name: '🧠 حفظ الرموز', desc: 'تذكر الرموز الظاهرة!', cat: 'تحدي شخصي',
+                    fn: (g, p) => this.pMemorize(g, p) },
+                    { id: 'p_hidden', name: '🔍 اعثر على الشيء المخفي', desc: 'اعثر على الشيء المخفي!', cat: 'تحدي شخصي',
+                        fn: (g, p) => this.pHidden(g, p) },
+                    { id: 'p_timer', name: '⏱️ أجب قبل انتهاء الوقت', desc: 'أجب في أقل من 5 ثواني!', cat: 'تحدي شخصي',
+                        fn: (g, p) => this.pTimer(g, p) },
+                    { id: 'p_exact', name: '🎯 اضغط بعد 3 ثواني بالضبط', desc: 'اضغط الزر بعد 3 ثواني بالضبط!',
+                        cat: 'تحدي شخصي', fn: (g, p) => this.pExact(g, p) },
+                    { id: 'p_emojis', name: '😄 تخمين الإيموجي', desc: 'خمّن ماذا يعني هذا الإيموجي!', cat: 'تحدي شخصي',
+                        fn: (g, p) => this.pEmoji(g, p) },
+                    { id: 'p_opposite', name: '🔄 عكس الكلمة', desc: 'قل عكس هذه الكلمة!', cat: 'تحدي شخصي',
+                    fn: (g, p) => this.pOpposite(g, p) },
+                ];
+            },
+
+            buildChaos() {
+                this.chaos = [
+                    { id: 'c_reverse', name: '🔄 عكس النقاط', desc: 'عكس ترتيب النقاط بالكامل!', cat: 'فوضى',
+                    fn: (g) => this.cReverse(g) },
+                    { id: 'c_swap', name: '🔄 تبديل عشوائي', desc: 'تبديل عشوائي بين اللاعبين!', cat: 'فوضى',
+                    fn: (g) => this.cSwap(g) },
+                    { id: 'c_double', name: '✖️ مضاعفة المكافآت', desc: 'مضاعفة جميع المكافآت هذه الجولة!', cat: 'فوضى',
+                        fn: (g) => { g.multiplier = 2;
+                            g.log('المكافآت مضاعفة!') } },
+                    { id: 'c_half', name: '➗ تنصيف العملات', desc: 'تنصيف عملات جميع اللاعبين!', cat: 'فوضى',
+                    fn: (g) => this.cHalf(g) },
+                    { id: 'c_box', name: '📦 صناديق غامضة', desc: 'كل لاعب يحصل على صندوق غامض!', cat: 'فوضى',
+                    fn: (g) => this.cBox(g) },
+                    { id: 'c_king', name: '👑 لاعب عشوائي يصبح ملكاً', desc: 'لاعب عشوائي يحصل على مكافأة ملكية!',
+                        cat: 'فوضى', fn: (g) => this.cKing(g) },
+                    { id: 'c_lastfirst', name: '⬆️ الأخير أولاً', desc: 'المركز الأخير يصبح الأول!', cat: 'فوضى',
+                        fn: (g) => this.cLastFirst(g) },
+                    { id: 'c_chaos_all', name: '🌀 فوضى شاملة', desc: 'كل شيء يتغير عشوائياً!', cat: 'فوضى',
+                    fn: (g) => this.cChaosAll(g) },
+                    { id: 'c_steal_all', name: '💰 سرقة جماعية', desc: 'الكل يسرق 10 عملات من جارهم!', cat: 'فوضى',
+                        fn: (g) => this.cStealAll(g) },
+                    { id: 'c_gift_all', name: '🎁 هدية للجميع', desc: 'كل لاعب يحصل على 20 عملة!', cat: 'فوضى',
+                        fn: (g) => this.cGiftAll(g) },
+                ];
+            },
+
+            buildStream() {
+                this.stream = [
+                    { id: 's_fastest', name: '🏃 أسرع لاعب', desc: 'أسرع لاعب يفوز!', cat: 'بث مباشر', fn: (g) => this
+                            .sFastest(g) },
+                    { id: 's_last', name: '🐢 آخر لاعب يخسر', desc: 'آخر لاعب يخسر!', cat: 'بث مباشر', fn: (g) => this
+                            .sLast(g) },
+                    { id: 's_voteall', name: '🗳️ تصويت الجميع', desc: 'الجميع يصوّت على الخيار الصحيح!', cat: 'بث مباشر',
+                        fn: (g) => this.sVoteAll(g) },
+                    { id: 's_secret', name: '🔢 خمن الرقم السري', desc: 'خمن الرقم السري بين 1 و 10!', cat: 'بث مباشر',
+                        fn: (g) => this.sSecret(g) },
+                    { id: 's_color', name: '🎨 اختر اللون الصحيح', desc: 'اختر اللون الصحيح من 4 ألوان!', cat: 'بث مباشر',
+                        fn: (g) => this.sColor(g) },
+                    { id: 's_survive', name: '⏳ نجِ من العد التنازلي', desc: 'اضغط في الوقت المناسب!', cat: 'بث مباشر',
+                        fn: (g) => this.sSurvive(g) },
+                    { id: 's_spin', name: '🎡 عجلة الحظ', desc: 'دور العجلة واربح جائزة!', cat: 'بث مباشر', fn: (g) => this
+                            .sSpin(g) },
+                ];
+            },
+
+            buildPunishment() {
+                this.punishment = [
+                    { id: 'u_losecoins', name: '💸 خسارة عملات', desc: 'خسر 30 عملة!', cat: 'عقاب', fn: (g, p) => this
+                            .uLoseCoins(g, p) },
+                    { id: 'u_losegems', name: '💎 خسارة جواهر', desc: 'خسر 2 جواهر!', cat: 'عقاب', fn: (g, p) => this
+                            .uLoseGems(g, p) },
+                    { id: 'u_freeze', name: '🧊 تجميد جولة', desc: 'تجميد لمدة جولة واحدة!', cat: 'عقاب', fn: (g, p) => this
+                            .uFreeze(g, p) },
+                    { id: 'u_novote', name: '🔇 لا تصويت', desc: 'لا تستطيع التصويت في الجولة القادمة!', cat: 'عقاب',
+                        fn: (g, p) => this.uNoVote(g, p) },
+                    { id: 'u_nickname', name: '📝 تغيير اللقب مؤقتاً', desc: 'يتم تغيير لقبك مؤقتاً!', cat: 'عقاب',
+                        fn: (g, p) => this.uNickname(g, p) },
+                    { id: 'u_redname', name: '🔴 اسم أحمر', desc: 'اسمك أحمر لجولة واحدة!', cat: 'عقاب', fn: (g, p) => this
+                            .uRedName(g, p) },
+                    { id: 'u_mute', name: '🤫 كتم صوت', desc: 'كتم صوتك لجولة واحدة!', cat: 'عقاب', fn: (g, p) => this
+                            .uMute(g, p) },
+                ];
+            },
+
+            buildReward() {
+                this.reward = [
+                    { id: 'r_jackpot', name: '🎰 جائزة كبرى', desc: 'فوز بجائزة كبرى 200 عملة!', cat: 'مكافأة',
+                    fn: (g, p) => this.rJackpot(g, p) },
+                    { id: 'r_doublecoins', name: '💰 مضاعفة العملات', desc: 'مضاعفة عملاتك!', cat: 'مكافأة',
+                    fn: (g, p) => this.rDoubleCoins(g, p) },
+                    { id: 'r_bonusxp', name: '⭐ مكافأة XP', desc: 'مكافأة 50 XP!', cat: 'مكافأة', fn: (g, p) => this
+                            .rBonusXP(g, p) },
+                    { id: 'r_freegems', name: '💎 جواهر مجانية', desc: '5 جواهر مجانية!', cat: 'مكافأة', fn: (g, p) => this
+                            .rFreeGems(g, p) },
+                    { id: 'r_secret', name: '🎁 مكافأة سرية', desc: 'مكافأة سرية غير متوقعة!', cat: 'مكافأة',
+                    fn: (g, p) => this.rSecret(g, p) },
+                    { id: 'r_lucky', name: '🍀 عجلة الحظ', desc: 'اربح جائزة من عجلة الحظ!', cat: 'مكافأة', fn: (g, p) => this
+                            .rLucky(g, p) },
+                    { id: 'r_kingbonus', name: '👑 مكافأة الملك', desc: 'الملك يحصل على مكافأة!', cat: 'مكافأة',
+                    fn: (g, p) => this.rKingBonus(g, p) },
+                ];
+            },
+
+            // --- Voting implementations ---
+            voteKick(g) {
+                const target = pick(g.players.filter(p => !p.bot));
+                if (!target) return;
+                g.log(`${target.name} تم طرده!`);
+                g.players = g.players.filter(p => p.name !== target.name);
+                g.kicked = target.name;
+            },
+            voteSteal(g) {
+                const t = pick(g.players.filter(p => !p.bot));
+                if (!t) return;
+                const u = Auth.current();
+                if (u && t.name === u.username) { g.log(`سرقة من ${t.name} فشلت!`); return; }
+                t.score = Math.max(0, t.score - 50);
+                g.log(`${t.name} خسر 50 نقطة!`);
+            },
+            voteGive(g) {
+                const t = pick(g.players.filter(p => !p.bot));
+                if (!t) return;
+                t.score += 30;
+                g.log(`${t.name} حصل على 30 نقطة!`);
+            },
+            voteSwap(g) {
+                const list = g.players.filter(p => !p.bot);
+                if (list.length < 2) return;
+                const [a, b] = [pick(list), pick(list)];
+                if (a === b) return;
+                const tmp = a.score;
+                a.score = b.score;
+                b.score = tmp;
+                g.log(`${a.name} و ${b.name} تم تبديل نقاطهم!`);
+            },
+            voteMute(g) {
+                const t = pick(g.players.filter(p => !p.bot));
+                if (!t) return;
+                t.muted = true;
+                g.log(`${t.name} تم كتمه!`);
+            },
+            voteProtect(g) {
+                const t = pick(g.players.filter(p => !p.bot));
+                if (!t) return;
+                t.protected = true;
+                g.log(`${t.name} محمي!`);
+            },
+            voteFunny(g) {
+                const t = pick(g.players.filter(p => !p.bot));
+                if (!t) return;
+                t.score += 20;
+                g.log(`${t.name} أطرف لاعب! +20`);
+            },
+            voteUnlucky(g) {
+                const t = pick(g.players.filter(p => !p.bot));
+                if (!t) return;
+                t.score = Math.max(0, t.score - 15);
+                g.log(`${t.name} أكثر لاعب حظ سيء! -15`);
+            },
+            voteReverse(g) {
+                const scores = g.players.map(p => p.score).sort((a, b) => a - b);
+                g.players.forEach((p, i) => p.score = scores[scores.length - 1 - i]);
+                g.log('تم عكس الترتيب!');
+            },
+            voteDouble(g) {
+                const t = pick(g.players.filter(p => !p.bot));
+                if (!t) return;
+                t.score *= 2;
+                g.log(`${t.name} تضاعفت نقاطه!`);
+            },
+            voteHalf(g) {
+                const t = pick(g.players.filter(p => !p.bot));
+                if (!t) return;
+                t.score = Math.floor(t.score / 2);
+                g.log(`${t.name} تنصفت نقاطه!`);
+            },
+
+            // --- Question system ---
+            getQuestionForPlayer(g, p) {
+                const available = this.questions.filter(q => !g.usedQuestions.includes(q.q) && !g.usedQuestions.includes(q
+                    .q + p.name));
+                if (available.length === 0) {
+                    g.usedQuestions = [];
+                    return pick(this.questions);
+                }
+                const q = pick(available);
+                g.usedQuestions.push(q.q + p.name);
+                return q;
+            },
+
+            // --- Personal challenges ---
+            pType(g, p) {
+                const words = ['تفاحة', 'قمر', 'نجم', 'شمس', 'ورد', 'بحر', 'جبل', 'نهر', 'سحاب', 'مطر', 'ثلج', 'نار', 'هواء',
+                    'تراب', 'ضوء', 'ظل', 'صوت', 'لون', 'شكل', 'حجم'
+                ];
+                const w = pick(words);
+                g.personalTargets = g.personalTargets || {};
+                g.personalTargets[p.name] = { type: 'type', word: w, done: false };
+                g.log(`${p.name}: اكتب "${w}"`);
+            },
+            pGuess(g, p) {
+                const num = Math.floor(Math.random() * 100) + 1;
+                g.personalTargets = g.personalTargets || {};
+                g.personalTargets[p.name] = { type: 'guess', number: num, done: false };
+                g.log(`${p.name}: خمن الرقم بين 1 و 100`);
+            },
+            pClick(g, p) {
+                const colors = ['أحمر', 'أزرق', 'أخضر', 'أصفر', 'بنفسجي', 'برتقالي'];
+                const c = pick(colors);
+                g.personalTargets = g.personalTargets || {};
+                g.personalTargets[p.name] = { type: 'click', color: c, done: false };
+                g.log(`${p.name}: اضغط على الزر "${c}"`);
+            },
+            pPuzzle(g, p) {
+                const puzzles = ['ما هو الشيء الذي له يد ولا يصفق؟ (الساعة)', 'ما هو الشيء الذي يمشي بلا رجلين؟ (الوقت)',
+                    'ما هو الشيء الذي يقرأ وليس له عيون؟ (الكتاب)'
+                ];
+                const puzzle = pick(puzzles);
+                g.personalTargets = g.personalTargets || {};
+                g.personalTargets[p.name] = { type: 'puzzle', puzzle, done: false };
+                g.log(`${p.name}: ${puzzle}`);
+            },
+            pMemorize(g, p) {
+                const symbols = ['⭐', '🔥', '💎', '👑', '🎯', '🚀', '🦁', '🐉', '🌈', '🎮'];
+                const selected = shuffle(symbols).slice(0, 4);
+                g.personalTargets = g.personalTargets || {};
+                g.personalTargets[p.name] = { type: 'memorize', symbols: selected, done: false };
+                g.log(`${p.name}: تذكر: ${selected.join(' ')}`);
+            },
+            pHidden(g, p) {
+                const objects = ['مفتاح', 'قلم', 'كتاب', 'هاتف', 'ساعة', 'نظارة', 'قبعة', 'حذاء'];
+                const obj = pick(objects);
+                g.personalTargets = g.personalTargets || {};
+                g.personalTargets[p.name] = { type: 'hidden', object: obj, done: false };
+                g.log(`${p.name}: اعثر على "${obj}"`);
+            },
+            pTimer(g, p) {
+                g.personalTargets = g.personalTargets || {};
+                g.personalTargets[p.name] = { type: 'timer', done: false };
+                g.log(`${p.name}: أجب في أقل من 5 ثواني!`);
+            },
+            pExact(g, p) {
+                g.personalTargets = g.personalTargets || {};
+                g.personalTargets[p.name] = { type: 'exact', done: false };
+                g.log(`${p.name}: اضغط بعد 3 ثواني بالضبط!`);
+            },
+            pEmoji(g, p) {
+                const emojis = { '😄': 'سعيد', '😢': 'حزين', '😡': 'غاضب', '😱': 'خائف', '🤔': 'متفكر', '😎': 'رائع',
+                    '🥳': 'محتفل', '😴': 'نائم' };
+                const e = pick(Object.keys(emojis));
+                g.personalTargets = g.personalTargets || {};
+                g.personalTargets[p.name] = { type: 'emoji', emoji: e, meaning: emojis[e], done: false };
+                g.log(`${p.name}: ماذا يعني هذا الإيموجي؟ ${e}`);
+            },
+            pOpposite(g, p) {
+                const opposites = { 'كبير': 'صغير', 'طويل': 'قصير', 'سريع': 'بطيء', 'قوي': 'ضعيف', 'جميل': 'قبيح',
+                    'غني': 'فقير', 'ذكي': 'غبي', 'شجاع': 'جبان' };
+                const w = pick(Object.keys(opposites));
+                g.personalTargets = g.personalTargets || {};
+                g.personalTargets[p.name] = { type: 'opposite', word: w, answer: opposites[w], done: false };
+                g.log(`${p.name}: عكس "${w}"`);
+            },
+
+            // --- Chaos implementations ---
+            cReverse(g) {
+                const scores = g.players.map(p => p.score).sort((a, b) => a - b);
+                g.players.forEach((p, i) => p.score = scores[scores.length - 1 - i]);
+                g.log('تم عكس الترتيب!');
+            },
+            cSwap(g) {
+                const list = g.players.filter(p => !p.bot);
+                if (list.length < 2) return;
+                const [a, b] = [pick(list), pick(list)];
+                if (a === b) return;
+                const tmp = a.score;
+                a.score = b.score;
+                b.score = tmp;
+                g.log(`${a.name} و ${b.name} تبادلوا النقاط!`);
+            },
+            cHalf(g) {
+                g.players.forEach(p => {
+                    if (!p.bot) p.score = Math.floor(p.score / 2);
+                });
+                g.log('تم تنصيف نقاط الجميع!');
+            },
+            cBox(g) {
+                g.players.forEach(p => {
+                    if (!p.bot) {
+                        const r = Math.random();
+                        if (r < .3) { p.score += 30;
+                            g.log(`${p.name} حصل على 30 نقطة من الصندوق!`); } else if (r < .6) { p.score += 10;
+                            g.log(`${p.name} حصل على 10 نقاط!`); } else { p.score = Math.max(0, p.score - 10);
+                            g.log(`${p.name} خسر 10 نقاط!`); }
+                    }
+                });
+            },
+            cKing(g) {
+                const p = pick(g.players.filter(p => !p.bot));
+                if (!p) return;
+                p.score += 50;
+                g.log(`👑 ${p.name} أصبح ملكاً! +50`);
+            },
+            cLastFirst(g) {
+                const sorted = [...g.players].sort((a, b) => a.score - b.score);
+                if (sorted.length < 2) return;
+                const last = sorted[0],
+                    first = sorted[sorted.length - 1];
+                const tmp = last.score;
+                last.score = first.score;
+                first.score = tmp;
+                g.log(`${last.name} أصبح الأول! ${first.name} أصبح الأخير!`);
+            },
+            cChaosAll(g) {
+                g.players.forEach(p => {
+                    if (!p.bot) p.score = Math.max(0, p.score + Math.floor((Math.random() - .5) * 80));
+                });
+                g.log('فوضى شاملة! الجميع تغيرت نقاطهم!');
+            },
+            cStealAll(g) {
+                const bots = g.players.filter(p => p.bot);
+                const humans = g.players.filter(p => !p.bot);
+                humans.forEach(h => {
+                    const target = pick(humans.filter(p => p.name !== h.name));
+                    if (target) { const steal = Math.min(10, target.score);
+                        target.score -= steal;
+                        h.score += steal; }
+                });
+                g.log('سرقة جماعية!');
+            },
+            cGiftAll(g) {
+                g.players.forEach(p => { if (!p.bot) p.score += 20; });
+                g.log('الجميع حصل على 20 نقطة!');
+            },
+
+            // --- Stream implementations ---
+            sFastest(g) {
+                const humans = g.players.filter(p => !p.bot);
+                humans.forEach(p => { p.score += Math.floor(Math.random() * 20) + 10; });
+                const winner = humans.reduce((a, b) => a.score > b.score ? a : b);
+                g.log(`🏃 أسرع لاعب: ${winner.name}!`);
+            },
+            sLast(g) {
+                const humans = g.players.filter(p => !p.bot);
+                const loser = humans.reduce((a, b) => a.score < b.score ? a : b);
+                loser.score = Math.max(0, loser.score - 20);
+                g.log(`🐢 آخر لاعب: ${loser.name} خسر 20 نقطة!`);
+            },
+            sVoteAll(g) {
+                const options = ['أ', 'ب', 'ج', 'د'];
+                const correct = pick(options);
+                g.voteTarget = { options, correct, votes: {} };
+                g.log(`الجميع يصوّت: اختر ${correct} من ${options.join(' ')}`);
+            },
+            sSecret(g) {
+                const num = Math.floor(Math.random() * 10) + 1;
+                g.secretNumber = num;
+                g.log(`🔢 خمن الرقم السري بين 1 و 10!`);
+            },
+            sColor(g) {
+                const colors = ['أحمر', 'أزرق', 'أخضر', 'أصفر'];
+                const correct = pick(colors);
+                g.colorTarget = { colors, correct };
+                g.log(`🎨 اختر اللون الصحيح: ${colors.join(' ')}`);
+            },
+            sSurvive(g) {
+                g.surviveTarget = { time: 3 + Math.floor(Math.random() * 3), done: false };
+                g.log(`⏳ اضغط في ${g.surviveTarget.time} ثواني بالضبط!`);
+            },
+            sSpin(g) {
+                const prizes = ['50 عملة', '100 عملة', '2 جواهر', '5 جواهر', 'مضاعفة النقاط', 'لا شيء'];
+                const prize = pick(prizes);
+                g.spinResult = prize;
+                g.log(`🎡 عجلة الحظ: ${prize}!`);
+            },
+
+            // --- Punishment implementations ---
+            uLoseCoins(g, p) {
+                if (p.protected) { g.log(`${p.name} محمي!`); return; }
+                const u = Auth.current();
+                if (u && p.name === u.username && hasUnlimited(u)) { g.log(`المؤسس محمي!`); return; }
+                p.score = Math.max(0, p.score - 30);
+                g.log(`${p.name} خسر 30 نقطة!`);
+            },
+            uLoseGems(g, p) {
+                if (p.protected) { g.log(`${p.name} محمي!`); return; }
+                const u = Auth.current();
+                if (u && p.name === u.username && hasUnlimited(u)) { g.log(`المؤسس محمي!`); return; }
+                // In the game, gems are tracked separately; we'll deduct from the user's actual account after the game
+                p.gemsLost = (p.gemsLost || 0) + 2;
+                g.log(`${p.name} خسر 2 جواهر!`);
+            },
+            uFreeze(g, p) {
+                if (p.protected) { g.log(`${p.name} محمي!`); return; }
+                p.frozen = true;
+                g.log(`${p.name} مجمد لجولة!`);
+            },
+            uNoVote(g, p) {
+                if (p.protected) { g.log(`${p.name} محمي!`); return; }
+                p.noVote = true;
+                g.log(`${p.name} لا يستطيع التصويت!`);
+            },
+            uNickname(g, p) {
+                if (p.protected) { g.log(`${p.name} محمي!`); return; }
+                const newName = pick(['ملك_الظلام', 'أمير_الضحك', 'سيد_الفوضى', 'حارس_النجوم', 'صانع_الغيوم', 'قاهر_التنين',
+                    'خادم_القمر'
+                ]);
+                p.tempName = newName;
+                g.log(`${p.name} أصبح "${newName}"!`);
+            },
+            uRedName(g, p) {
+                if (p.protected) { g.log(`${p.name} محمي!`); return; }
+                p.redName = true;
+                g.log(`${p.name} اسمه أحمر!`);
+            },
+            uMute(g, p) {
+                if (p.protected) { g.log(`${p.name} محمي!`); return; }
+                p.muted = true;
+                g.log(`${p.name} كتم صوت!`);
+            },
+
+            // --- Reward implementations ---
+            rJackpot(g, p) {
+                p.score += 200;
+                g.log(`${p.name} فاز بـ 200 نقطة! 🎰`);
+            },
+            rDoubleCoins(g, p) {
+                p.score *= 2;
+                g.log(`${p.name} تضاعفت نقاطه!`);
+            },
+            rBonusXP(g, p) {
+                p.xpBonus = (p.xpBonus || 0) + 50;
+                g.log(`${p.name} حصل على 50 XP!`);
+            },
+            rFreeGems(g, p) {
+                p.gemsBonus = (p.gemsBonus || 0) + 5;
+                g.log(`${p.name} حصل على 5 جواهر!`);
+            },
+            rSecret(g, p) {
+                const bonuses = [10, 25, 50, 100];
+                const b = pick(bonuses);
+                p.score += b;
+                g.log(`${p.name} حصل على مكافأة سرية ${b}! 🎁`);
+            },
+            rLucky(g, p) {
+                const prizes = [10, 20, 30, 50, 80, 100];
+                const prize = pick(prizes);
+                p.score += prize;
+                g.log(`${p.name} حصل على ${prize} نقطة من عجلة الحظ! 🍀`);
+            },
+            rKingBonus(g, p) {
+                const sorted = [...g.players].sort((a, b) => b.score - a.score);
+                if (sorted.length > 0) {
+                    sorted[0].score += 40;
+                    g.log(`${sorted[0].name} (الملك) حصل على 40 نقطة!`);
+                }
+            },
+
+            // --- Main engine ---
+            reset(g) {
+                this.history = [];
+                this.round = 0;
+                this.timer = 30;
+                this.state = 'idle';
+                this.players = g.players.map(p => ({ ...p, score: p.score || 0, protected: false, muted: false,
+                    frozen: false, noVote: false, redName: false, tempName: null, gemsLost: 0, gemsBonus: 0,
+                    xpBonus: 0 }));
+                this.usedQuestions = [];
+                this.usedPersonal = [];
+                this.currentChallenge = null;
+                this.votes = {};
+                this.answers = {};
+                this.results = {};
+                this.multiplier = 1;
+                this.logs = [];
+                this.gameOver = false;
+                this.personalTargets = {};
+                g.logs = this.logs;
+                this.players.forEach(p => { if (p.bot) p.skill = .3 + Math.random() * .7; });
+            },
+
+            next(g) {
+                if (this.round >= this.maxRounds) { this.gameOver = true; return null; }
+                this.round++;
+
+                // Reset per-round flags
+                this.players.forEach(p => { p.protected = false;
+                    p.muted = false;
+                    p.frozen = false;
+                    p.noVote = false;
+                    p.redName = false;
+                    p.tempName = null; });
+
+                // Select challenge category with weights
+                const cats = [
+                    { cat: 'voting', pool: this.voting, weight: 25 },
+                    { cat: 'questions', pool: this.questions, weight: 20 },
+                    { cat: 'personal', pool: this.personal, weight: 20 },
+                    { cat: 'chaos', pool: this.chaos, weight: 15 },
+                    { cat: 'stream', pool: this.stream, weight: 10 },
+                    { cat: 'punishment', pool: this.punishment, weight: 5 },
+                    { cat: 'reward', pool: this.reward, weight: 5 },
+                ];
+
+                // Weighted random
+                let total = cats.reduce((s, c) => s + c.weight, 0);
+                let r = Math.random() * total;
+                let chosenCat = cats[0];
+                for (const c of cats) { r -= c.weight; if (r <= 0) { chosenCat = c; break; } }
+
+                // Pick challenge from pool, avoid repeats
+                let pool = chosenCat.pool;
+                let challenge = null;
+                let attempts = 0;
+                while (attempts < 10) {
+                    const candidate = pick(pool);
+                    if (!this.history.includes(candidate.id) || this.history.length > 5) {
+                        challenge = candidate;
+                        break;
+                    }
+                    attempts++;
+                }
+                if (!challenge) challenge = pick(pool);
+
+                this.history.push(challenge.id);
+                if (this.history.length > 10) this.history.shift();
+
+                this.currentChallenge = challenge;
+                this.state = challenge.cat;
+
+                // For questions: assign different question to each player
+                if (challenge.cat === 'questions') {
+                    this.players.forEach(p => {
+                        if (!p.bot) {
+                            const q = this.getQuestionForPlayer(g, p);
+                            p._question = q;
+                        }
+                    });
+                    g.usedQuestions = this.usedQuestions;
+                }
+
+                // For personal: assign different challenge to each player
+                if (challenge.cat === 'personal') {
+                    this.players.forEach(p => {
+                        if (!p.bot) {
+                            challenge.fn(g, p);
+                        }
+                    });
+                }
+
+                // For voting: randomize target
+                if (challenge.cat === 'voting') {
+                    challenge.fn(g);
+                }
+
+                // For chaos: apply immediately
+                if (challenge.cat === 'chaos') {
+                    challenge.fn(g);
+                }
+
+                // For stream: apply immediately
+                if (challenge.cat === 'stream') {
+                    challenge.fn(g);
+                }
+
+                // For punishment: target a random player
+                if (challenge.cat === 'punishment') {
+                    const target = pick(this.players.filter(p => !p.bot && !p.protected));
+                    if (target) challenge.fn(g, target);
+                    else g.log('لا يوجد لاعب مستهدف');
+                }
+
+                // For reward: target a random player
+                if (challenge.cat === 'reward') {
+                    const target = pick(this.players.filter(p => !p.bot));
+                    if (target) challenge.fn(g, target);
+                    else g.log('لا يوجد لاعب مستهدف');
+                }
+
+                // Bot actions: simple AI
+                this.players.forEach(p => {
+                    if (p.bot) {
+                        const gain = Math.floor(p.skill * 25 + Math.random() * 15);
+                        p.score += gain * this.multiplier;
+                    }
+                });
+
+                // Human auto small gain for participation
+                this.players.forEach(p => {
+                    if (!p.bot) {
+                        p.score += Math.floor(Math.random() * 6) + 2;
+                    }
+                });
+
+                g.players = this.players;
+                this.logs.push(`الجولة ${this.round}: ${challenge.name} — ${challenge.desc}`);
+                g.logs = this.logs;
+                g.multiplier = this.multiplier;
+
+                return challenge;
+            },
+
+            // Check if player answered correctly (for questions)
+            answerQuestion(p, answer) {
+                if (!p._question) return false;
+                const correct = p._question.answer === answer;
+                if (correct) {
+                    p.score += 15 * this.multiplier;
+                    this.logs.push(`${p.name} أجاب بشكل صحيح! +15`);
+                    Sound.reward();
+                } else {
+                    p.score = Math.max(0, p.score - 10);
+                    this.logs.push(`${p.name} أجاب بشكل خاطئ! -10`);
+                    Sound.boo();
+                }
+                p._question = null;
+                return correct;
+            },
+
+            // For personal challenge completion
+            completePersonal(p, result) {
+                const target = this.personalTargets?.[p.name];
+                if (!target || target.done) return;
+                target.done = true;
+                if (result) {
+                    p.score += 20 * this.multiplier;
+                    this.logs.push(`${p.name} أكمل التحدي! +20`);
+                    Sound.reward();
+                } else {
+                    p.score = Math.max(0, p.score - 15);
+                    this.logs.push(`${p.name} فشل في التحدي! -15`);
+                    Sound.boo();
+                }
+            },
+
+            // For voting: record vote
+            recordVote(p, option) {
+                if (p.noVote || p.muted) { this.logs.push(`${p.name} لا يستطيع التصويت`); return; }
+                this.votes[p.name] = option;
+                Sound.vote();
+            },
+
+            // Process voting results
+            processVotes(g) {
+                if (!this.voteTarget) return;
+                const votes = Object.values(this.votes);
+                const counts = {};
+                this.voteTarget.options.forEach(o => counts[o] = 0);
+                votes.forEach(v => { if (counts[v] !== undefined) counts[v]++; });
+                let max = 0,
+                    winner = null;
+                for (const [k, v] of Object.entries(counts)) { if (v > max) { max = v;
+                        winner = k; } }
+                if (winner === this.voteTarget.correct) {
+                    // Everyone who voted correctly gets a reward
+                    for (const [name, vote] of Object.entries(this.votes)) {
+                        if (vote === winner) {
+                            const p = this.players.find(p => p.name === name);
+                            if (p) { p.score += 10;
+                                this.logs.push(`${name} صوت بشكل صحيح! +10`); }
+                        }
+                    }
+                } else {
+                    // Everyone who voted wrong gets a small penalty
+                    for (const [name, vote] of Object.entries(this.votes)) {
+                        if (vote !== winner) {
+                            const p = this.players.find(p => p.name === name);
+                            if (p) { p.score = Math.max(0, p.score - 5);
+                                this.logs.push(`${name} صوت بشكل خاطئ! -5`); }
+                        }
+                    }
+                }
+                this.votes = {};
+                this.voteTarget = null;
+            },
+
+            // Process secret number guess
+            processSecret(g) {
+                if (!this.secretNumber) return;
+                const humans = this.players.filter(p => !p.bot);
+                humans.forEach(p => {
+                    const guess = p._secretGuess;
+                    if (guess === this.secretNumber) { p.score += 30;
+                        this.logs.push(`${p.name} خمن الرقم الصحيح! +30`);
+                        Sound.reward(); } else if (guess !== undefined) { p.score = Math.max(0, p.score - 10);
+                        this.logs.push(`${p.name} خمن خطأ! -10`);
+                        Sound.boo(); }
+                    p._secretGuess = undefined;
+                });
+                this.secretNumber = null;
+            },
+
+            // Process color guess
+            processColor(g) {
+                if (!this.colorTarget) return;
+                const humans = this.players.filter(p => !p.bot);
+                humans.forEach(p => {
+                    const guess = p._colorGuess;
+                    if (guess === this.colorTarget.correct) { p.score += 20;
+                        this.logs.push(`${p.name} اختار اللون الصحيح! +20`);
+                        Sound.reward(); } else if (guess !== undefined) { p.score = Math.max(0, p.score - 8);
+                        this.logs.push(`${p.name} اختار لون خاطئ! -8`);
+                        Sound.boo(); }
+                    p._colorGuess = undefined;
+                });
+                this.colorTarget = null;
+            },
+
+            // Process survive
+            processSurvive(g) {
+                if (!this.surviveTarget) return;
+                const humans = this.players.filter(p => !p.bot);
+                humans.forEach(p => {
+                    const time = p._surviveTime;
+                    if (time !== undefined && Math.abs(time - this.surviveTarget.time) < 0.5) {
+                        p.score += 25;
+                        this.logs.push(`${p.name} نجى في الوقت المناسب! +25`);
+                        Sound.reward();
+                    } else if (time !== undefined) {
+                        p.score = Math.max(0, p.score - 10);
+                        this.logs.push(`${p.name} فشل في النجاة! -10`);
+                        Sound.boo();
+                    }
+                    p._surviveTime = undefined;
+                });
+                this.surviveTarget = null;
+            },
+
+            // Process spin
+            processSpin(g) {
+                if (!this.spinResult) return;
+                const humans = this.players.filter(p => !p.bot);
+                humans.forEach(p => {
+                    if (this.spinResult === '50 عملة') p.score += 50;
+                    else if (this.spinResult === '100 عملة') p.score += 100;
+                    else if (this.spinResult === '2 جواهر') { p.gemsBonus = (p.gemsBonus || 0) + 2;
+                        this.logs.push(`${p.name} حصل على 2 جواهر!`); } else if (this.spinResult === '5 جواهر') { p
+                            .gemsBonus = (p.gemsBonus || 0) + 5;
+                        this.logs.push(`${p.name} حصل على 5 جواهر!`); } else if (this.spinResult === 'مضاعفة النقاط') { p
+                            .score *= 2;
+                        this.logs.push(`${p.name} تضاعفت نقاطه!`); } else { this.logs.push(`${p.name} لم يحصل على شيء`);
+                    }
+                    Sound.reward();
+                });
+                this.spinResult = null;
+            },
+
+            // --- Get challenge for display ---
+            getCurrentChallenge() { return this.currentChallenge; },
+
+            // --- Get state for UI ---
+            getState() { return this.state; },
+
+            // --- Get players ---
+            getPlayers() { return this.players; },
+
+            // --- Get logs ---
+            getLogs() { return this.logs; },
+
+            // --- Get round ---
+            getRound() { return this.round; },
+
+            // --- Is game over ---
+            isGameOver() { return this.gameOver; },
+
+            // --- Get personal target for player ---
+            getPersonalTarget(p) { return this.personalTargets?.[p.name] || null; },
+
+            // --- Get question for player ---
+            getQuestion(p) { return p._question || null; },
+
+            // --- Get vote target ---
+            getVoteTarget() { return this.voteTarget || null; },
+
+            // --- Get secret number ---
+            getSecretNumber() { return this.secretNumber; },
+
+            // --- Get color target ---
+            getColorTarget() { return this.colorTarget || null; },
+
+            // --- Get survive target ---
+            getSurviveTarget() { return this.surviveTarget || null; },
+
+            // --- Get spin result ---
+            getSpinResult() { return this.spinResult; },
+        };
+
+        // Initialize challenge engine
+        PartyEngine.init();
+
+        /* ============================================================
+           UI / Router
+           ============================================================ */
+        const state = { view: 'auth', authTab: 'login', roomView: null, game: null };
+
+        function render() {
+            const app = $('#app');
+            app.innerHTML = '';
+            const user = Auth.current();
+            if (!user) { state.view = 'auth';
+                app.append(renderAuth()); return; }
+            if (user.firstLogin) { app.append(renderWelcome()); return; }
+            app.append(renderTop(user));
+            const page = el('div', { class: 'page', id: 'page' });
+            app.append(page);
+            if (routes[state.view]) routes[state.view](page, user);
+            else routes.home(page, user);
+        }
+
+        function renderTopBar() {
+            const u = Auth.current();
+            if (!u) return;
+            const top = $('#top-inner');
+            if (top) { top.replaceWith(renderTopInner(u)); }
+        }
+
+        function renderTopInner(u) {
+            const isF = Auth.isFounder(u);
+            return el('div', { id: 'top-inner', class: 'wallet' },
+                el('div', { class: 'chip coin' }, '🪙 ', String(u.coins)),
+                el('div', { class: 'chip gem' }, '💎 ', String(u.gems)),
+                el('div', { class: 'chip lvl' }, '⭐ L', String(u.level)),
+                el('div', { class: 'avatar', onclick: () => { state.view = 'profile';
+                        render(); }, style: `background:conic-gradient(from ${u.avatarColor}deg,var(--neon-blue),var(--neon-purple))` },
+                    u.avatar || '👤',
+                    isF ? el('span', { class: 'verify' }, '✓') : null
+                )
+            );
+        }
+
+        function renderTop(u) {
+            const isF = Auth.isFounder(u);
+            const bar = el('div', { class: 'topbar' },
+                el('div', { class: 'logo' }, 'يلا بينا'),
+                el('div', { class: 'nav' }, ...[
+                    ['home', 'الرئيسية'],
+                    ['rooms', 'الغرف'],
+                    ['challenge', 'التحدي'],
+                    ['leaderboard', 'المتصدرون'],
+                    ['missions', 'المهام'],
+                    ['shop', 'المتجر'],
+                    ['profile', 'الملف'],
+                    ['settings', 'الإعدادات']
+                ].map(([k, l]) =>
+                    el('div', { class: 'n' + (state.view === k ? ' active' : ''), onclick: () => { Sound.click();
+                            state.view = k;
+                            render(); } }, l)
+                )),
+                renderTopInner(u),
+                isF ? el('span', { class: 'badge verified', style: 'margin-right:6px' }, '✓ مؤسس') : null
+            );
+            return bar;
+        }
+
+        /* ---------- AUTH ---------- */
+        function renderAuth() {
+            const wrap = el('div', { id: 'auth-screen' });
+            const card = el('div', { class: 'glass auth-card' });
+            card.append(
+                el('h1', {}, 'يلا بينا'),
+                el('div', { class: 'sub' }, 'منصة التحديات الحية — تجربة بث مباشر'),
+                el('div', { class: 'tabs' },
+                    el('div', { class: 'tab' + (state.authTab === 'login' ? ' active' : ''), onclick: () => { state
+                                .authTab = 'login';
+                            render(); } }, 'دخول'),
+                    el('div', { class: 'tab' + (state.authTab === 'register' ? ' active' : ''), onclick: () => { state
+                                .authTab = 'register';
+                            render(); } }, 'تسجيل'),
+                    el('div', { class: 'tab' + (state.authTab === 'forgot' ? ' active' : ''), onclick: () => { state
+                                .authTab = 'forgot';
+                            render(); } }, 'نسيت السر'),
+                )
+            );
+            if (state.authTab === 'login') {
+                const who = el('input', { class: 'input', placeholder: 'اسم المستخدم أو البريد' });
+                const pw = el('input', { class: 'input', type: 'password', placeholder: 'كلمة السر' });
+                const rem = el('input', { type: 'checkbox' });
+                if (localStorage.getItem('yalla_remember')) who.value = localStorage.getItem('yalla_remember');
+                card.append(
+                    el('label', {}, 'اسم المستخدم / البريد'), who,
+                    el('label', {}, 'كلمة السر'), pw,
+                    el('div', { class: 'row', style: 'margin:10px 0' }, rem, el('span', {}, 'تذكرني')),
+                    el('button', { class: 'btn primary', style: 'width:100%', onclick: () => {
+                            try {
+                                Auth.login({ who: who.value, password: pw.value, remember: rem.checked });
+                                toast('تم الدخول', 'good');
+                                Sound.win();
+                                state.view = 'home';
+                                render();
+                            } catch (e) { toast(e.message, 'bad');
+                                Sound.lose(); }
+                        } }, 'دخول')
+                );
+            } else if (state.authTab === 'register') {
+                const un = el('input', { class: 'input', placeholder: 'اسم فريد' });
+                const em = el('input', { class: 'input', type: 'email', placeholder: 'name@mail.com' });
+                const pw = el('input', { class: 'input', type: 'password', placeholder: '••••' });
+                card.append(
+                    el('label', {}, 'اسم المستخدم'), un,
+                    el('label', {}, 'البريد الإلكتروني'), em,
+                    el('label', {}, 'كلمة السر'), pw,
+                    el('button', { class: 'btn primary', style: 'width:100%;margin-top:10px', onclick: () => {
+                            try {
+                                const u = Auth.register({ username: un.value, email: em.value,
+                                    password: pw.value });
+                                Auth.login({ who: u.username, password: pw.value });
+                                toast('تم إنشاء الحساب', 'good');
+                                Sound.win();
+                                state.view = 'home';
+                                render();
+                            } catch (e) { toast(e.message, 'bad');
+                                Sound.lose(); }
+                        } }, 'إنشاء حساب')
+                );
+            } else {
+                const em = el('input', { class: 'input', type: 'email', placeholder: 'البريد المسجّل' });
+                const pw = el('input', { class: 'input', type: 'password', placeholder: 'كلمة السر الجديدة' });
+                card.append(
+                    el('label', {}, 'البريد'), em,
+                    el('label', {}, 'كلمة السر الجديدة'), pw,
+                    el('button', { class: 'btn primary', style: 'width:100%;margin-top:10px', onclick: () => {
+                            try { Auth.reset(em.value, pw.value);
+                                toast('تم تعيين كلمة السر', 'good');
+                                state.authTab = 'login';
+                                render(); } catch (e) { toast(e.message, 'bad'); }
+                        } }, 'إعادة تعيين')
+                );
+            }
+            wrap.append(card);
+            return wrap;
+        }
+
+        /* ---------- WELCOME ---------- */
+        function renderWelcome() {
+            const w = el('div', { id: 'auth-screen' });
+            const c = el('div', { class: 'glass modal welcome-anim' });
+            c.append(
+                el('h1', {}, 'أهلاً بك في يلا بينا'),
+                el('p', { style: 'color:var(--muted);margin-bottom:16px' }, '"المطور يامن يرحب بكم في تجربة التحديات الحية"'),
+                el('div', { class: 'glass', style: 'padding:16px;text-align:right;margin:14px 0;max-height:200px;overflow:auto' },
+                    el('h3', { style: 'font-family:Orbitron;color:var(--neon-blue);margin-bottom:6px' }, 'شروط الاستخدام'),
+                    el('p', { style: 'font-size:.88rem;color:var(--muted);line-height:1.7' },
+                        'باستخدامك للمنصة توافق على قواعد اللعب النظيف، وعدم الغش، والالتزام بأخلاق المجتمع. البيانات محفوظة محلياً على جهازك فقط.'
+                        ),
+                    el('h3', { style: 'font-family:Orbitron;color:var(--neon-purple);margin-top:10px' }, 'سياسة الخصوصية'),
+                    el('p', { style: 'font-size:.88rem;color:var(--muted);line-height:1.7' },
+                        'نحن لا نجمع أي بيانات شخصية. جميع معلومات الحساب والإحصائيات تُخزَّن محلياً في متصفحك.')
+                ),
+                el('button', { class: 'btn primary', style: 'width:100%;padding:14px;font-size:1.05rem', onclick: () => {
+                        const u = Auth.current();
+                        u.firstLogin = false;
+                        DB.save();
+                        Sound.reward();
+                        render();
+                    } }, 'أوافق وابدأ اللعب')
+            );
+            w.append(c);
+            return w;
+        }
+
+        /* ---------- ROUTES ---------- */
+        const routes = {};
+
+        routes.home = (page, u) => {
+            const isF = Auth.isFounder(u);
+            const hero = el('div', { class: 'hero' },
+                el('h2', {}, `أهلاً ${u.username} 👋`),
+                el('p', {}, 'تحديات حية كل 30 ثانية — تصويت، أسئلة، فوضى، ومكافآت. منصة مصممة للبث المباشر والتفاعل الجماعي.'),
+                el('div', { class: 'row', style: 'margin-top:16px' },
+                    el('button', { class: 'btn primary', onclick: () => { Sound.click();
+                            state.view = 'challenge';
+                            render(); } }, 'ابدأ التحدي 🎮'),
+                    el('button', { class: 'btn', onclick: () => { Sound.click();
+                            state.view = 'rooms';
+                            render(); } }, 'استعرض الغرف'),
+                    el('button', { class: 'btn ghost', onclick: () => claimDaily(u) }, 'المكافأة اليومية 🎁')
+                )
+            );
+            page.append(hero);
+            page.append(el('div', { class: 'grid g4' },
+                stat('الانتصارات', u.stats.wins),
+                stat('المباريات', u.stats.matches),
+                stat('نسبة الفوز', u.stats.matches ? Math.round(u.stats.wins / u.stats.matches * 100) + '%' : '0%'),
+                stat('المستوى', u.level)
+            ));
+            page.append(el('div', { class: 'grid g3', style: 'margin-top:18px' },
+                modeCard('⚔️ متعدد اللاعبين', 'ادخل غرفة أو أنشئها والعب مع 6-18 لاعب مباشرة', () => { state.view =
+                        'rooms';
+                    render(); }),
+                modeCard('🤖 لاعب واحد ضد بوتات', 'بوتات ذكية تتفاعل مع التحديات مثل اللاعبين', () => startSolo()),
+                modeCard('⏱️ تحدي الـ30 ثانية', 'محرك أحداث يولد 300+ تحديفي كل جولة', () => { state.view =
+                        'challenge';
+                    render(); })
+            ));
+            if (isF) {
+                page.append(el('div', { class: 'glass', style: 'padding:16px;margin-top:18px;border-color:gold' },
+                    el('div', { class: 'row', style: 'justify-content:center;gap:20px' },
+                        el('span', { style: 'color:gold;font-weight:700' }, '👑 حساب مؤسس — عملات وجواهر لا محدودة'),
+                        el('span', { class: 'badge verified' }, '✓ موثّق')
+                    )
+                ));
+            }
+        };
+
+        function stat(l, v) { return el('div', { class: 'stat' }, el('div', { class: 'v' }, String(v)), el('div',
+                { class: 'l' }, l)); }
+
+        function modeCard(t, d, fn) { return el('div', { class: 'card', onclick: fn, style: 'cursor:pointer' },
+            el('h3', {}, t), el('p', {}, d)); }
+
+        function claimDaily(u) {
+            const today = new Date().toDateString();
+            if (u.dailyClaimed === today) { toast('تم استلام المكافأة اليوم بالفعل', 'bad'); return; }
+            u.dailyClaimed = today;
+            const c = 100 + Math.floor(Math.random() * 100),
+                g = Math.floor(Math.random() * 5) + 1;
+            u.coins += c;
+            u.gems += g;
+            DB.save();
+            toast(`+${c} 🪙 +${g} 💎`, 'gold');
+            Sound.reward();
+            renderTopBar();
+        }
+
+        /* ---------- ROOMS ---------- */
+        routes.rooms = (page) => {
+            const list = Rooms.list();
+            const nameI = el('input', { class: 'input', placeholder: 'اسم الغرفة' });
+            const maxI = el('input', { class: 'input', type: 'number', min: 6, max: 18, value: 8 });
+            const codeI = el('input', { class: 'input', placeholder: 'كود الغرفة' });
+            const searchI = el('input', { class: 'input', placeholder: 'بحث عن غرفة...', oninput: () => renderList() });
+
+            const listEl = el('div', {});
+
+            function renderList() {
+                listEl.innerHTML = '';
+                const q = searchI.value.trim().toLowerCase();
+                const filtered = Rooms.list().filter(r => !q || r.name.toLowerCase().includes(q) || r.code
+                .toLowerCase().includes(q));
+                if (filtered.length === 0) { listEl.append(el('p', { style: 'color:var(--muted);text-align:center;padding:20px' },
+                        'لا توجد غرف حالياً — أنشئ واحدة!')); return; }
+                filtered.forEach(r => {
+                    const isDev = r.host === 'YAMEN';
+                    listEl.append(el('div', { class: 'room-item' },
+                        el('div', {},
+                            el('div', { style: 'font-weight:700;font-size:1.05rem' }, r.name + ' ',
+                                el('span', { class: 'badge' }, r.code),
+                                isDev ? el('span', { class: 'badge verified', style: 'margin-inline-start:6px' },
+                                    'مطور') : null
+                            ),
+                            el('div', { style: 'color:var(--muted);font-size:.85rem' },
+                                `المضيف: ${r.host} • اللاعبون ${r.players.length}/${r.maxPlayers} • ${r.mode==='party'?'تحدي 30ث':'كلاسيك'}`
+                                )
+                        ),
+                        el('button', { class: 'btn sm primary', onclick: () => enterRoom(r.code) }, 'انضمام')
+                    ));
+                });
+            }
+
+            page.append(
+                el('div', { class: 'hero' },
+                    el('h2', {}, 'غرف اللعب'),
+                    el('p', {}, 'أنشئ غرفة جديدة، ابحث بالاسم أو الكود، أو انضم لأي غرفة نشطة.')
+                ),
+                el('div', { class: 'grid g2' },
+                    el('div', { class: 'card' },
+                        el('h3', {}, 'إنشاء غرفة'),
+                        el('label', {}, 'الاسم'), nameI,
+                        el('label', {}, 'عدد اللاعبين (6-18)'), maxI,
+                        el('button', { class: 'btn primary', style: 'width:100%;margin-top:10px', onclick: () => {
+                                const u = Auth.current();
+                                if (!nameI.value.trim()) { toast('أدخل اسم الغرفة', 'bad'); return; }
+                                const r = Rooms.create({ name: nameI.value, maxPlayers: maxI.value, host: u
+                                        .username });
+                                Sound.join();
+                                toast(`تم إنشاء الغرفة ${r.code}`, 'good');
+                                enterRoom(r.code);
+                            } }, 'إنشاء')
+                    ),
+                    el('div', { class: 'card' },
+                        el('h3', {}, 'انضمام بكود'),
+                        el('label', {}, 'كود الغرفة'), codeI,
+                        el('button', { class: 'btn', style: 'width:100%;margin-top:10px', onclick: () => {
+                                try {
+                                    const u = Auth.current();
+                                    Rooms.join(codeI.value.trim().toUpperCase(), u.username);
+                                    enterRoom(codeI.value.trim().toUpperCase());
+                                } catch (e) { toast(e.message, 'bad'); }
+                            } }, 'انضمام')
+                    )
+                ),
+                el('div', { class: 'glass', style: 'padding:18px;margin-top:18px' },
+                    el('div', { class: 'row', style: 'justify-content:space-between;margin-bottom:10px' },
+                        el('h3', { style: 'font-family:Orbitron;background:var(--grad);-webkit-background-clip:text;color:transparent' },
+                            'الغرف النشطة'),
+                        searchI
+                    ),
+                    listEl
+                )
+            );
+            renderList();
+        };
+
+        function enterRoom(code) {
+            state.roomView = code;
+            state.view = 'room';
+            render();
+        }
+
+        routes.room = (page) => {
+            const code = state.roomView;
+            const room = DB.data.rooms[code];
+            if (!room) { toast('الغرفة غير موجودة', 'bad');
+                state.view = 'rooms';
+                render(); return; }
+            const u = Auth.current();
+
+            const playersEl = el('div', {});
+
+            function renderPlayers() {
+                playersEl.innerHTML = '';
+                room.players.forEach((p, i) => {
+                    const isDev = p.name === 'YAMEN';
+                    playersEl.append(el('div', { class: 'player-row' + (i < 3 ? ' top' : '') },
+                        el('span', { style: 'font-weight:700;font-size:1.1rem' }, `#${i+1}`),
+                        el('span', { style: 'flex:1' }, p.name,
+                            p.bot ? el('span', { class: 'badge', style: 'margin-inline-start:6px' }, 'BOT') :
+                            null,
+                            isDev ? el('span', { class: 'dev-badge' }, 'مطور') : null
+                        ),
+                        el('span', { style: 'color:var(--neon-blue);font-weight:700' }, String(p.score || 0))
+                    ));
+                });
+            }
+            renderPlayers();
+
+            const chatMsgs = el('div', { class: 'chat-msgs' });
+            const chatInput = el('input', { class: 'input', placeholder: 'اكتب رسالة... 😊', onkeydown: (e) => {
+                    if (e.key === 'Enter' && chatInput.value.trim()) { Rooms.chat(code, u.username, chatInput
+                            .value.trim());
+                        chatInput.value = '';
+                        renderChat(); }
+                } });
+
+            function renderChat() {
+                chatMsgs.innerHTML = '';
+                (DB.data.chat[code] || []).slice(-50).forEach(m => {
+                    chatMsgs.append(el('div', { class: 'msg' },
+                        el('span', { class: 'who' }, m.who + ':'),
+                        m.text,
+                        el('span', { style: 'color:var(--muted);font-size:.75rem;margin-inline-start:6px' }, m
+                            .t)
+                    ));
+                });
+                chatMsgs.scrollTop = chatMsgs.scrollHeight;
+            }
+            renderChat();
+
+            page.append(
+                el('div', { class: 'row', style: 'justify-content:space-between;margin-bottom:14px' },
+                    el('div', {},
+                        el('h2', { style: 'font-family:Orbitron;background:var(--grad);-webkit-background-clip:text;color:transparent' },
+                            room.name),
+                        el('div', { style: 'color:var(--muted)' },
+                            'الكود: ', el('span', { class: 'badge' }, room.code),
+                            ` • ${room.players.length}/${room.maxPlayers}`
+                        )
+                    ),
+                    el('div', { class: 'row' },
+                        el('button', { class: 'btn sm', onclick: () => { Rooms.addBots(code, room.maxPlayers - room
+                                    .players.length);
+                                renderPlayers();
+                                toast('تم إضافة بوتات', 'good'); } }, '+ بوتات'),
+                        el('button', { class: 'btn sm primary', onclick: () => startParty(room) },
+                            'ابدأ التحدي ⚡'),
+                        el('button', { class: 'btn sm danger', onclick: () => { Rooms.leave(code, u.username);
+                                Sound.leave();
+                                state.view = 'rooms';
+                                render(); } }, 'خروج')
+                    )
+                ),
+                el('div', { class: 'grid g2' },
+                    el('div', { class: 'glass', style: 'padding:18px' },
+                        el('h3', { style: 'font-family:Orbitron;margin-bottom:10px;color:var(--neon-blue)' },
+                            'اللاعبون'),
+                        playersEl
+                    ),
+                    el('div', { class: 'glass chatbox' },
+                        el('h3', { style: 'font-family:Orbitron;color:var(--neon-purple);margin-bottom:6px' },
+                            'الدردشة'),
+                        chatMsgs,
+                        el('div', { class: 'chat-input' },
+                            chatInput,
+                            el('button', { class: 'btn sm primary', onclick: () => {
+                                    if (chatInput.value.trim()) { Rooms.chat(code, u.username, chatInput
+                                            .value.trim());
+                                        chatInput.value = '';
+                                        renderChat(); }
+                                } }, 'إرسال')
+                        )
+                    )
+                )
+            );
+            const iv = setInterval(() => { if (state.view !== 'room') { clearInterval(iv); return; }
+                renderChat(); }, 2000);
+        };
+
+        /* ---------- SOLO / PARTY ---------- */
+        function startSolo() {
+            const u = Auth.current();
+            const r = Rooms.create({ name: 'مباراة سريعة', maxPlayers: 8, host: u.username });
+            Rooms.addBots(r.code, 7);
+            state.roomView = r.code;
+            startParty(DB.data.rooms[r.code]);
+        }
+
+        routes.challenge = (page) => {
+            page.append(
+                el('div', { class: 'hero' },
+                    el('h2', {}, 'تحدي الـ 30 ثانية ⏱️'),
+                    el('p', {}, 'كل 30 ثانية، محرك الذكاء الاصطناعي يولّد تحدياً جديداً من 300+ تحدٍ. تصويت، أسئلة، فوضى، ومكافآت — كل جولة مختلفة!')
+                ),
+                el('div', { class: 'grid g2' },
+                    el('div', { class: 'card', onclick: startSolo, style: 'cursor:pointer' },
+                        el('h3', {}, '🤖 ضد البوتات'),
+                        el('p', {}, 'ابدأ فوراً — بوتات ذكية بمستويات مهارة متفاوتة')
+                    ),
+                    el('div', { class: 'card', onclick: () => { state.view = 'rooms';
+                            render(); }, style: 'cursor:pointer' },
+                        el('h3', {}, '⚔️ متعدد اللاعبين'),
+                        el('p', {}, 'ادخل غرفة موجودة أو أنشئ واحدة')
+                    )
+                )
+            );
+        };
+
+        /* ---------- PARTY GAME ---------- */
+        function startParty(room) {
+            PartyEngine.reset({ players: room.players.map(p => ({ ...p, score: 0 })) });
+            const g = {
+                room,
+                players: room.players.map(p => ({ ...p, score: 0 })),
+                round: 0,
+                maxRounds: 8,
+                multiplier: 1,
+                logs: [],
+                usedQuestions: [],
+            };
+            state.game = g;
+            state.view = 'play';
+            render();
+            runPartyRound();
+        }
+
+        function runPartyRound() {
+            const g = state.game;
+            if (!g) return;
+            const engine = PartyEngine;
+            const challenge = engine.next(g);
+            if (!challenge || engine.isGameOver()) { endPartyGame(); return; }
+
+            g.currentChallenge = challenge;
+            g.players = engine.getPlayers();
+            g.logs = engine.getLogs();
+            g.round = engine.getRound();
+            g.multiplier = engine.multiplier;
+
+            renderPlay();
+
+            // Timer
+            engine.timer = 30;
+            clearInterval(g._iv);
+            g._iv = setInterval(() => {
+                engine.timer--;
+                const t = $('#timer');
+                if (t) t.textContent = engine.timer;
+                if (engine.timer <= 0) {
+                    clearInterval(g._iv);
+                    // Process pending votes/answers
+                    engine.processVotes(g);
+                    engine.processSecret(g);
+                    engine.processColor(g);
+                    engine.processSurvive(g);
+                    engine.processSpin(g);
+                    // Update players
+                    g.players = engine.getPlayers();
+                    g.logs = engine.getLogs();
+                    renderPlay();
+                    // Next round after a short delay
+                    setTimeout(() => { if (state.view === 'play') runPartyRound(); }, 500);
+                }
+            }, 1000);
+        }
+
+        routes.play = (page) => { renderPlayInto(page); };
+
+        function renderPlay() {
+            const p = $('#page');
+            if (p) { p.innerHTML = '';
+                renderPlayInto(p); }
+        }
+
+        function renderPlayInto(page) {
+            const g = state.game;
+            if (!g) return;
+            const engine = PartyEngine;
+            const challenge = engine.getCurrentChallenge();
+            const players = engine.getPlayers();
+            const sorted = [...players].sort((a, b) => b.score - a.score);
+            const isF = Auth.isFounder(Auth.current());
+
+            // Challenge display
+            const challengeEl = el('div', { class: 'challenge-display' });
+            if (challenge) {
+                challengeEl.append(
+                    el('span', { class: 'cat-tag' }, challenge.cat || 'تحدي'),
+                    el('h2', {}, challenge.name || ''),
+                    el('p', { class: 'desc' }, challenge.desc || '')
+                );
+            } else {
+                challengeEl.append(el('p', { style: 'color:var(--muted)' }, 'جاري التحضير...'));
+            }
+            page.append(challengeEl);
+
+            // Timer
+            page.append(el('div', { class: 'timer', id: 'timer' }, String(engine.timer || 30)));
+
+            // Interaction area
+            const interact = el('div', { class: 'challenge-interact' });
+            const stateType = engine.getState();
+
+            // --- Voting ---
+            if (stateType === 'voting') {
+                const target = engine.getVoteTarget();
+                if (target) {
+                    interact.append(el('p', { style: 'color:var(--muted);margin-bottom:12px' }, 'صوّت على الخيار الصحيح:'));
+                    const opts = el('div', { class: 'vote-options' });
+                    target.options.forEach(o => {
+                        opts.append(el('button', { class: 'btn', onclick: () => {
+                                const u = Auth.current();
+                                const p = players.find(p => p.name === u.username);
+                                if (p) { engine.recordVote(p, o);
+                                    toast(`صوت لـ ${o}`, 'good');
+                                    Sound.vote(); }
+                            } }, o));
+                    });
+                    interact.append(opts);
+                }
+            }
+
+            // --- Questions ---
+            else if (stateType === 'questions') {
+                const u = Auth.current();
+                const p = players.find(p => p.name === u.username);
+                const q = p ? engine.getQuestion(p) : null;
+                if (q) {
+                    interact.append(el('div', { class: 'question-box' },
+                        el('div', { class: 'q' }, q.q),
+                        el('div', { class: 'q-options' }, ...q.options.map(o =>
+                            el('button', { class: 'btn sm', onclick: () => {
+                                    if (p) {
+                                        const correct = engine.answerQuestion(p, o);
+                                        toast(correct ? '✅ إجابة صحيحة!' : '❌ إجابة خاطئة!', correct ?
+                                            'good' : 'bad');
+                                        if (correct) Sound.reward();
+                                        else Sound.boo();
+                                        renderPlay();
+                                    }
+                                } }, o)
+                        ))
+                    ));
+                } else {
+                    interact.append(el('p', { style: 'color:var(--muted)' }, 'انتظر دورك...'));
+                }
+            }
+
+            // --- Personal ---
+            else if (stateType === 'personal') {
+                const u = Auth.current();
+                const p = players.find(p => p.name === u.username);
+                const target = p ? engine.getPersonalTarget(p) : null;
+                if (target && !target.done) {
+                    let msg = '';
+                    let action = null;
+                    if (target.type === 'type') msg = `اكتب: "${target.word}"`;
+                    else if (target.type === 'guess') msg = `خمن الرقم بين 1 و 100`;
+                    else if (target.type === 'click') msg = `اضغط على زر "${target.color}"`;
+                    else if (target.type === 'puzzle') msg = target.puzzle;
+                    else if (target.type === 'memorize') msg = `تذكر: ${target.symbols.join(' ')}`;
+                    else if (target.type === 'hidden') msg = `اعثر على: "${target.object}"`;
+                    else if (target.type === 'timer') msg = 'أجب في أقل من 5 ثواني!';
+                    else if (target.type === 'exact') msg = 'اضغط بعد 3 ثواني بالضبط!';
+                    else if (target.type === 'emoji') msg = `ماذا يعني: ${target.emoji}`;
+                    else if (target.type === 'opposite') msg = `عكس: "${target.word}"`;
+
+                    interact.append(el('p', { style: 'font-weight:700' }, msg));
+                    if (target.type === 'exact') {
+                        let startTime = Date.now();
+                        interact.append(el('button', { class: 'btn primary', onclick: () => {
+                                const elapsed = (Date.now() - startTime) / 1000;
+                                if (p) {
+                                    p._surviveTime = elapsed;
+                                    const diff = Math.abs(elapsed - 3);
+                                    if (diff < 0.5) { toast('🎯 بالضبط!', 'good');
+                                        Sound.reward();
+                                        engine.completePersonal(p, true); } else { toast(`⏱️ فرق ${diff.toFixed(1)} ثانية`,
+                                            'bad');
+                                        Sound.boo();
+                                        engine.completePersonal(p, false); }
+                                    renderPlay();
+                                }
+                            } }, 'اضغط الآن!'));
+                    } else if (target.type === 'type') {
+                        const inp = el('input', { class: 'input', placeholder: 'اكتب...', onkeydown: (e) => {
+                                if (e.key === 'Enter' && inp.value.trim()) {
+                                    const ok = inp.value.trim() === target.word;
+                                    if (p) {
+                                        if (ok) { toast('✅ صحيح!', 'good');
+                                            Sound.reward();
+                                            engine.completePersonal(p, true); } else { toast('❌ خطأ!',
+                                            'bad');
+                                            Sound.boo();
+                                            engine.completePersonal(p, false); }
+                                        renderPlay();
+                                    }
+                                }
+                            } });
+                        interact.append(inp);
+                    } else if (target.type === 'guess') {
+                        const inp = el('input', { class: 'input', type: 'number', placeholder: 'خمن...',
+                            onkeydown: (e) => {
+                                if (e.key === 'Enter' && inp.value) {
+                                    const guess = parseInt(inp.value);
+                                    if (p) {
+                                        if (guess === target.number) { toast('✅ صحيح!', 'good');
+                                            Sound.reward();
+                                            engine.completePersonal(p, true); } else { toast(
+                                                `❌ خطأ! الرقم كان ${target.number}`, 'bad');
+                                            Sound.boo();
+                                            engine.completePersonal(p, false); }
+                                        renderPlay();
+                                    }
+                                }
+                            } });
+                        interact.append(inp);
+                    } else if (target.type === 'click') {
+                        const colors = ['أحمر', 'أزرق', 'أخضر', 'أصفر', 'بنفسجي', 'برتقالي'];
+                        const opts = el('div', { class: 'q-options' });
+                        colors.forEach(c => {
+                            opts.append(el('button', { class: 'btn sm', style: `background:${c === 'أحمر' ? '#ff0000' : c === 'أزرق' ? '#0055ff' : c === 'أخضر' ? '#00aa00' : c === 'أصفر' ? '#ffaa00' : c === 'بنفسجي' ? '#aa00ff' : '#ff8800'};color:#fff`,
+                                    onclick: () => {
+                                        if (p) {
+                                            const ok = c === target.color;
+                                            if (ok) { toast('✅ صحيح!', 'good');
+                                                Sound.reward();
+                                                engine.completePersonal(p, true); } else { toast(
+                                                    `❌ خطأ! اللون الصحيح ${target.color}`,
+                                                    'bad');
+                                                Sound.boo();
+                                                engine.completePersonal(p, false); }
+                                            renderPlay();
+                                        }
+                                    } }, c));
+                        });
+                        interact.append(opts);
+                    } else if (target.type === 'memorize') {
+                        interact.append(el('p', { style: 'color:var(--muted)' }, 'اضغط "تم" عندما تتذكرها:'));
+                        interact.append(el('button', { class: 'btn primary', onclick: () => {
+                                if (p) {
+                                    const ok = confirm(`هل تذكرت: ${target.symbols.join(' ')}؟`);
+                                    if (ok) { toast('✅ تذكرت!', 'good');
+                                        Sound.reward();
+                                        engine.completePersonal(p, true); } else { toast('❌ نسيت!',
+                                            'bad');
+                                        Sound.boo();
+                                        engine.completePersonal(p, false); }
+                                    renderPlay();
+                                }
+                            } }, 'تم'));
+                    } else if (target.type === 'emoji') {
+                        const meanings = ['سعيد', 'حزين', 'غاضب', 'خائف', 'متفكر', 'رائع', 'محتفل', 'نائم'];
+                        const opts = el('div', { class: 'q-options' });
+                        shuffle(meanings).slice(0, 4).forEach(m => {
+                            opts.append(el('button', { class: 'btn sm', onclick: () => {
+                                    if (p) {
+                                        const ok = m === target.meaning;
+                                        if (ok) { toast('✅ صحيح!', 'good');
+                                            Sound.reward();
+                                            engine.completePersonal(p, true); } else { toast(
+                                                `❌ خطأ! المعنى الصحيح ${target.meaning}`,
+                                                'bad');
+                                            Sound.boo();
+                                            engine.completePersonal(p, false); }
+                                        renderPlay();
+                                    }
+                                } }, m));
+                        });
+                        interact.append(opts);
+                    } else if (target.type === 'opposite') {
+                        const inp = el('input', { class: 'input', placeholder: 'اكتب العكس...', onkeydown: (e) => {
+                                if (e.key === 'Enter' && inp.value.trim()) {
+                                    const ok = inp.value.trim() === target.answer;
+                                    if (p) {
+                                        if (ok) { toast('✅ صحيح!', 'good');
+                                            Sound.reward();
+                                            engine.completePersonal(p, true); } else { toast(
+                                                `❌ خطأ! العكس هو ${target.answer}`, 'bad');
+                                            Sound.boo();
+                                            engine.completePersonal(p, false); }
+                                        renderPlay();
+                                    }
+                                }
+                            } });
+                        interact.append(inp);
+                    } else if (target.type === 'puzzle' || target.type === 'hidden' || target.type === 'timer') {
+                        interact.append(el('button', { class: 'btn primary', onclick: () => {
+                                if (p) {
+                                    const ok = confirm('هل أكملت التحدي؟');
+                                    if (ok) { toast('✅ أحسنت!', 'good');
+                                        Sound.reward();
+                                        engine.completePersonal(p, true); } else { toast('❌ للأسف!',
+                                            'bad');
+                                        Sound.boo();
+                                        engine.completePersonal(p, false); }
+                                    renderPlay();
+                                }
+                            } }, 'أكملت ✅'));
+                    }
+                } else {
+                    interact.append(el('p', { style: 'color:var(--muted)' }, 'انتظر دورك...'));
+                }
+            }
+
+            // --- Chaos, Stream, Punishment, Reward ---
+            else if (['chaos', 'stream', 'punishment', 'reward'].includes(stateType)) {
+                interact.append(el('div', { class: 'chaos-effect' },
+                    stateType === 'chaos' ? '🌀' :
+                    stateType === 'stream' ? '📡' :
+                    stateType === 'punishment' ? '💢' : '🎁'
+                ));
+                interact.append(el('p', { style: 'color:var(--muted);margin-top:8px' }, 'تم تطبيق التحدي!'));
+                // For stream challenges that need interaction
+                if (stateType === 'stream') {
+                    const secret = engine.getSecretNumber();
+                    if (secret) {
+                        interact.append(el('p', { style: 'font-weight:700' }, `خمن الرقم السري بين 1 و 10`));
+                        const inp = el('input', { class: 'input', type: 'number', min: 1, max: 10,
+                            placeholder: 'خمن...', onkeydown: (e) => {
+                                if (e.key === 'Enter' && inp.value) {
+                                    const u = Auth.current();
+                                    const p = players.find(p => p.name === u.username);
+                                    if (p) { p._secretGuess = parseInt(inp.value);
+                                        toast('تم التخمين!', 'good');
+                                        Sound.vote();
+                                        renderPlay(); }
+                                }
+                            } });
+                        interact.append(inp);
+                    }
+                    const color = engine.getColorTarget();
+                    if (color) {
+                        interact.append(el('p', { style: 'font-weight:700' }, `اختر اللون الصحيح:`));
+                        const opts = el('div', { class: 'q-options' });
+                        color.colors.forEach(c => {
+                            opts.append(el('button', { class: 'btn sm', onclick: () => {
+                                    const u = Auth.current();
+                                    const p = players.find(p => p.name === u.username);
+                                    if (p) { p._colorGuess = c;
+                                        toast(`اخترت ${c}`, 'good');
+                                        Sound.vote();
+                                        renderPlay(); }
+                                } }, c));
+                        });
+                        interact.append(opts);
+                    }
+                    const survive = engine.getSurviveTarget();
+                    if (survive) {
+                        interact.append(el('p', { style: 'font-weight:700' },
+                            `اضغط في ${survive.time} ثواني بالضبط!`));
+                        let startTime = Date.now();
+                        interact.append(el('button', { class: 'btn primary', onclick: () => {
+                                const elapsed = (Date.now() - startTime) / 1000;
+                                const u = Auth.current();
+                                const p = players.find(p => p.name === u.username);
+                                if (p) { p._surviveTime = elapsed;
+                                    toast(`⏱️ ${elapsed.toFixed(1)} ثانية`, 'good');
+                                    Sound.vote();
+                                    renderPlay(); }
+                            } }, 'اضغط!'));
+                    }
+                    const spin = engine.getSpinResult();
+                    if (spin) {
+                        interact.append(el('p', { style: 'font-weight:700;font-size:1.4rem' }, `🎡 ${spin}`));
+                    }
+                }
+            }
+
+            page.append(interact);
+
+            // Leaderboard
+            page.append(el('div', { class: 'grid g2', style: 'margin-top:18px' },
+                el('div', { class: 'glass', style: 'padding:16px' },
+                    el('h3', { style: 'font-family:Orbitron;color:var(--neon-blue);margin-bottom:10px' },
+                        'الترتيب المباشر'),
+                    ...sorted.map((p, i) => {
+                        const isDev = p.name === 'YAMEN';
+                        return el('div', { class: 'player-row' + (i < 3 ? ' top' : '') },
+                            el('span', {}, `#${i+1}`),
+                            el('span', { style: 'flex:1' },
+                                p.tempName || p.name,
+                                p.bot ? el('span', { class: 'badge', style: 'margin-inline-start:6px' },
+                                    'BOT') : null,
+                                isDev ? el('span', { class: 'dev-badge' }, 'مطور') : null,
+                                p.redName ? el('span', { style: 'color:red;margin-inline-start:6px' },
+                                    '🔴') : null,
+                                p.muted ? el('span', { style: 'color:var(--muted);margin-inline-start:6px' },
+                                    '🔇') : null,
+                                p.frozen ? el('span', { style: 'color:var(--neon-blue);margin-inline-start:6px' },
+                                    '🧊') : null
+                            ),
+                            el('span', { style: 'color:var(--neon-blue);font-weight:700' }, String(Math.floor(p
+                                    .score)))
+                        );
+                    })
+                ),
+                el('div', { class: 'glass', style: 'padding:16px' },
+                    el('h3', { style: 'font-family:Orbitron;color:var(--neon-purple);margin-bottom:10px' },
+                        'سجل الأحداث'),
+                    el('div', { style: 'max-height:200px;overflow:auto;font-size:.85rem' },
+                        ...(g.logs || []).slice(-10).map(l =>
+                            el('div', { style: 'padding:4px 0;color:var(--muted);border-bottom:1px solid var(--glass-brd)' },
+                                l)
+                        )
+                    )
+                )
+            ));
+
+            // Round info
+            page.append(el('div', { style: 'text-align:center;color:var(--muted);margin-top:12px;font-size:.85rem' },
+                `الجولة ${engine.getRound()}/${g.maxRounds || 8} — ${engine.isGameOver() ? 'انتهت' : 'جارية...'}`
+            ));
+        }
+
+        /* ---------- END GAME ---------- */
+        function endPartyGame() {
+            const g = state.game;
+            if (!g) return;
+            const engine = PartyEngine;
+            clearInterval(g._iv);
+
+            const players = engine.getPlayers();
+            const sorted = [...players].sort((a, b) => b.score - a.score);
+            const u = Auth.current();
+            const me = players.find(p => p.name === u.username);
+            const meRank = me ? sorted.findIndex(p => p.name === u.username) + 1 : -1;
+            const won = meRank === 1;
+
+            // Update stats
+            u.stats.matches++;
+            if (won) { u.stats.wins++;
+                grantCoins(200);
+                grantGems(3);
+                grantXP(80);
+                Sound.win();
+                if (u.stats.wins === 1) unlockAch('first_win', 'أول انتصار!'); } else { u.stats.losses++;
+                grantCoins(50);
+                grantXP(30);
+                Sound.lose(); }
+
+            // Apply gems lost/bonus
+            if (me) {
+                if (me.gemsLost > 0) { const lost = Math.min(me.gemsLost, u.gems);
+                    u.gems -= lost; }
+                if (me.gemsBonus > 0) u.gems += me.gemsBonus;
+                if (me.xpBonus > 0) grantXP(me.xpBonus);
+            }
+
+            // Founder gets special treatment
+            if (Auth.isFounder(u)) {
+                u.coins = 999999999;
+                u.gems = 999999999;
+            }
+
+            u.history.unshift({ date: Date.now(), rank: meRank, won, score: me ? Math.floor(me.score) : 0 });
+            u.history = u.history.slice(0, 20);
+            DB.save();
+
+            // Show results
+            showPartyResults(sorted, meRank, won, u);
+            state.game = null;
+        }
+
+        function showPartyResults(sorted, rank, won, u) {
+            const back = el('div', { class: 'modal-back' });
+            const m = el('div', { class: 'glass modal' });
+            const isF = Auth.isFounder(u);
+            m.append(
+                el('h2', {}, won ? '🏆 فزت!' : 'انتهت المباراة'),
+                el('p', { style: 'color:var(--muted);margin-bottom:12px' }, `ترتيبك: #${rank} من ${sorted.length}`),
+                el('div', { style: 'max-height:250px;overflow:auto' },
+                    ...sorted.slice(0, 8).map((p, i) => {
+                        const isDev = p.name === 'YAMEN';
+                        return el('div', { class: 'player-row' + (i < 3 ? ' top' : '') },
+                            el('span', {}, `#${i+1}`),
+                            el('span', { style: 'flex:1' },
+                                p.tempName || p.name,
+                                p.bot ? el('span', { class: 'badge', style: 'margin-inline-start:6px' },
+                                    'BOT') : null,
+                                isDev ? el('span', { class: 'dev-badge' }, 'مطور') : null
+                            ),
+                            el('span', { style: 'color:var(--neon-blue);font-weight:700' }, String(Math.floor(p
+                                    .score)))
+                        );
+                    })
+                ),
+                el('div', { style: 'margin-top:14px;padding:12px;background:rgba(255,255,255,.04);border-radius:12px' },
+                    el('p', {}, `🪙 +${won ? 200 : 50} عملة`),
+                    el('p', {}, `💎 ${won ? '+3' : '+0'} جواهر`),
+                    el('p', {}, `⭐ +${won ? 80 : 30} XP`),
+                    isF ? el('p', { style: 'color:gold;font-weight:700' }, '👑 حساب مؤسس — مكافآت لا محدودة') : null
+                ),
+                el('button', { class: 'btn primary', style: 'width:100%;margin-top:14px', onclick: () => {
+                        back.remove();
+                        state.view = 'home';
+                        render();
+                        toast('تم العودة إلى اللوبي', 'good');
+                        Sound.reward();
+                    } }, 'العودة للرئيسية 🏠')
+            );
+            back.append(m);
+            document.body.append(back);
+        }
+
+        /* ---------- LEADERBOARD ---------- */
+        routes.leaderboard = (page) => {
+            const users = Object.values(DB.data.users);
+            const sorted = users.map(u => ({
+                name: u.username,
+                wins: u.stats.wins,
+                matches: u.stats.matches,
+                level: u.level,
+                xp: u.xp,
+                coins: u.coins,
+                isF: Auth.isFounder(u)
+            })).sort((a, b) => b.wins - a.wins || b.level - a.level || b.coins - a.coins);
+            page.append(
+                el('div', { class: 'hero' }, el('h2', {}, 'المتصدرون 🏆'), el('p', {},
+                    'ترتيب مباشر مبني على انتصارات المستخدمين الحقيقيين على هذا الجهاز.')),
+                el('div', { class: 'glass', style: 'padding:14px' },
+                    el('table', {},
+                        el('thead', {}, el('tr', {},
+                            el('th', {}, '#'),
+                            el('th', {}, 'اللاعب'),
+                            el('th', {}, 'انتصارات'),
+                            el('th', {}, 'مباريات'),
+                            el('th', {}, 'المستوى'),
+                            el('th', {}, 'العملات')
+                        )),
+                        el('tbody', {},
+                            ...sorted.map((u, i) => el('tr', {},
+                                el('td', {}, '#' + (i + 1)),
+                                el('td', {}, u.name, u.isF ? el('span', { class: 'badge verified',
+                                        style: 'margin-inline-start:6px' }, 'مؤسس') : null),
+                                el('td', {}, String(u.wins)),
+                                el('td', {}, String(u.matches)),
+                                el('td', {}, 'L' + u.level),
+                                el('td', {}, '🪙' + u.coins)
+                            ))
+                        )
+                    )
+                )
+            );
+        };
+
+        /* ---------- MISSIONS ---------- */
+        routes.missions = (page, u) => {
+            const missions = [
+                { id: 'm1', t: 'العب مباراة واحدة', target: 1, cur: Math.min(1, u.stats.matches), reward: '+50 🪙' },
+                { id: 'm2', t: 'اربح 3 مباريات', target: 3, cur: Math.min(3, u.stats.wins), reward: '+150 🪙 +2 💎' },
+                { id: 'm3', t: 'ادخل غرفة', target: 1, cur: Object.keys(DB.data.rooms).length ? 1 : 0,
+                reward: '+30 XP' },
+                { id: 'm4', t: 'استلم المكافأة اليومية', target: 1, cur: u.dailyClaimed === new Date().toDateString() ?
+                        1 : 0, reward: 'مسموح مرة/يوم' },
+            ];
+            page.append(el('div', { class: 'hero' }, el('h2', {}, 'المهام اليومية'), el('p', {}, 'أكمل المهام لتحصل على مكافآت.')));
+            page.append(el('div', { class: 'grid g2' }, ...missions.map(m => {
+                const pct = Math.round(m.cur / m.target * 100);
+                return el('div', { class: 'card' },
+                    el('h3', { style: 'font-size:1.05rem' }, m.t),
+                    el('p', {}, 'المكافأة: ' + m.reward),
+                    el('div', { class: 'bar', style: 'margin-top:10px' }, el('div', { style: `width:${pct}%` })),
+                    el('div', { style: 'margin-top:6px;color:var(--muted);font-size:.85rem' }, `${m.cur}/${m
+                            .target}`)
+                );
+            })));
+        };
+
+        /* ---------- SHOP ---------- */
+        routes.shop = (page, u) => {
+            const isF = Auth.isFounder(u);
+            const items = [
+                { id: 'avatar_gold', name: 'إطار ذهبي', price: 500, cur: 'coins', emoji: '🟡' },
+                { id: 'avatar_neon', name: 'إطار نيون', price: 15, cur: 'gems', emoji: '💠' },
+                { id: 'xp_boost', name: 'دفعة XP ×2 لساعة', price: 20, cur: 'gems', emoji: '⚡' },
+                { id: 'title_king', name: 'لقب: الملك', price: 1000, cur: 'coins', emoji: '👑' },
+                { id: 'title_dev', name: 'لقب: مطور', price: 999999, cur: 'coins', emoji: '👨‍💻' },
+                { id: 'gem_pack', name: 'حزمة جواهر ×10', price: 100, cur: 'coins', emoji: '💎' },
+            ];
+            page.append(el('div', { class: 'hero' }, el('h2', {}, 'المتجر 🛒'), el('p', {}, 'اشترِ أشياء بالعملات والجواهر.')));
+            page.append(el('div', { class: 'grid g3' }, ...items.map(it => {
+                const owned = u.inventory.includes(it.id);
+                const canBuy = isF ? true : u[it.cur] >= it.price;
+                return el('div', { class: 'card' },
+                    el('div', { style: 'font-size:3rem;text-align:center' }, it.emoji),
+                    el('h3', { style: 'text-align:center' }, it.name),
+                    el('p', { style: 'text-align:center' }, `${it.price} ${it.cur === 'coins' ? '🪙' : '💎'}`),
+                    el('button', { class: 'btn primary', style: 'width:100%;margin-top:8px', disabled: owned ||
+                            !canBuy, onclick: () => {
+                            if (isF) {
+                                u.inventory.push(it.id);
+                                DB.save();
+                                renderTopBar();
+                                toast('تم الشراء ✅ (حساب مؤسس)', 'gold');
+                                Sound.reward();
+                                render();
+                                return;
+                            }
+                            if (u[it.cur] < it.price) { toast('رصيد غير كاف', 'bad'); return; }
+                            u[it.cur] -= it.price;
+                            u.inventory.push(it.id);
+                            DB.save();
+                            renderTopBar();
+                            toast('تم الشراء ✅', 'good');
+                            Sound.reward();
+                            render();
+                        } },
+                        owned ? '✅ تم الامتلاك' : (isF ? 'شراء (مجاني)' : 'شراء')
+                    )
+                );
+            })));
+            if (isF) {
+                page.append(el('div', { class: 'glass', style: 'padding:16px;margin-top:18px;border-color:gold;text-align:center' },
+                    el('p', { style: 'color:gold;font-weight:700' }, '👑 حساب مؤسس — جميع المشتريات مجانية')
+                ));
+            }
+        };
+
+        /* ---------- PROFILE ---------- */
+        routes.profile = (page, u) => {
+            const isF = Auth.isFounder(u);
+            const nameI = el('input', { class: 'input', value: u.username, readonly: true });
+            const emailI = el('input', { class: 'input', value: u.email, readonly: true });
+            const avatars = ['🎮', '🚀', '⭐', '🔥', '⚡', '👑', '🎯', '💎', '🦁', '🐉', '🥷', '🤖'];
+            const picker = el('div', { class: 'avatar-picker' });
+            avatars.forEach(a => {
+                const b = el('div', { class: 'ap' + (u.avatar === a ? ' sel' : ''), onclick: () => {
+                        u.avatar = a;
+                        u.avatarColor = Math.floor(Math.random() * 360);
+                        DB.save();
+                        render();
+                    } }, a);
+                picker.append(b);
+            });
+
+            page.append(
+                el('div', { class: 'hero' }, el('h2', {}, 'الملف الشخصي'), el('p', {}, 'حرّر اسمك، غيّر الصورة الرمزية، وشاهد إحصائياتك.')),
+                el('div', { class: 'grid g2' },
+                    el('div', { class: 'glass', style: 'padding:20px' },
+                        el('h3', { style: 'font-family:Orbitron;color:var(--neon-blue);margin-bottom:10px' },
+                            'الصورة الرمزية'),
+                        picker,
+                        el('label', {}, 'اسم المستخدم'), nameI,
+                        el('label', {}, 'البريد'), emailI,
+                        isF ? el('p', { style: 'color:gold;font-weight:700;margin:8px 0' },
+                            '👑 حساب مؤسس موثّق ✓') : null,
+                        u.title ? el('p', { style: 'color:var(--neon-pink);font-weight:700' }, `🏷️ ${u.title}`) :
+                        null,
+                        el('button', { class: 'btn danger', style: 'margin-top:12px', onclick: () => {
+                                Auth.logout();
+                                toast('تم الخروج', 'good');
+                                state.view = 'auth';
+                                render();
+                            } }, 'تسجيل خروج')
+                    ),
+                    el('div', { class: 'glass', style: 'padding:20px' },
+                        el('h3', { style: 'font-family:Orbitron;color:var(--neon-purple);margin-bottom:10px' },
+                            'الإحصائيات'),
+                        el('div', { class: 'grid g2' },
+                            stat('انتصارات', u.stats.wins),
+                            stat('خسائر', u.stats.losses),
+                            stat('مباريات', u.stats.matches),
+                            stat('نسبة الفوز', u.stats.matches ? Math.round(u.stats.wins / u.stats.matches *
+                                100) + '%' : '0%'),
+                            stat('عملات', isF ? '∞' : u.coins),
+                            stat('جواهر', isF ? '∞' : u.gems),
+                            stat('XP', u.xp),
+                            stat('المستوى', u.level),
+                        ),
+                        el('h4', { style: 'margin-top:14px;color:var(--muted)' }, 'الإنجازات'),
+                        el('div', { style: 'display:flex;flex-wrap:wrap;gap:6px;margin-top:6px' },
+                            ...(u.achievements.length ? u.achievements.map(a => el('span', { class: 'badge' },
+                                    '🏆 ' + a)) : [el('span', { style: 'color:var(--muted)' },
+                                    'لا يوجد بعد')])
+                        ),
+                        el('h4', { style: 'margin-top:14px;color:var(--muted)' }, 'آخر المباريات'),
+                        el('div', { style: 'max-height:160px;overflow:auto' },
+                            ...(u.history.length ? u.history.map(h => el('div', { class: 'player-row' },
+                                el('span', {}, new Date(h.date).toLocaleDateString('ar-EG')),
+                                el('span', { style: 'flex:1' }, h.won ? '✅ فوز' : '❌ خسارة'),
+                                el('span', {}, `#${h.rank} • ${h.score}`)
+                            )) : [el('div', { style: 'color:var(--muted);padding:8px' }, 'لا يوجد')])
+                        )
+                    )
+                )
+            );
+        };
+
+        /* ---------- SETTINGS ---------- */
+        routes.settings = (page) => {
+            const s = DB.data.settings;
+            const music = el('input', { type: 'range', min: 0, max: 1, step: .05, value: s.music, oninput: (e) => { s
+                        .music = +e.target.value;
+                    DB.save(); } });
+            const sfx = el('input', { type: 'range', min: 0, max: 1, step: .05, value: s.sfx, oninput: (e) => { s.sfx =
+                        +e.target.value;
+                    DB.save(); } });
+            const mute = el('input', { type: 'checkbox', checked: s.muted, onchange: (e) => { s.muted = e.target
+                        .checked;
+                    DB.save(); } });
+            page.append(
+                el('div', { class: 'hero' }, el('h2', {}, 'الإعدادات ⚙️'), el('p', {}, 'تحكم بالصوت، والبيانات، والحساب.')),
+                el('div', { class: 'grid g2' },
+                    el('div', { class: 'glass', style: 'padding:20px' },
+                        el('h3', { style: 'font-family:Orbitron;color:var(--neon-blue);margin-bottom:10px' },
+                            'الصوت'),
+                        el('label', {}, 'موسيقى الخلفية'), music,
+                        el('label', { style: 'margin-top:10px' }, 'المؤثرات الصوتية'), sfx,
+                        el('div', { class: 'row', style: 'margin-top:12px' }, mute, el('span', {}, 'كتم كل الأصوات'))
+                    ),
+                    el('div', { class: 'glass', style: 'padding:20px' },
+                        el('h3', { style: 'font-family:Orbitron;color:var(--bad);margin-bottom:10px' },
+                            'إدارة البيانات'),
+                        el('p', { style: 'color:var(--muted);margin-bottom:10px' }, 'حذف كل حسابات وبيانات هذا الجهاز (لا يمكن التراجع).'),
+                        el('button', { class: 'btn', onclick: () => {
+                                const blob = new Blob([JSON.stringify(DB.data, null, 2)], { type: 'application/json' });
+                                const a = document.createElement('a');
+                                a.href = URL.createObjectURL(blob);
+                                a.download = 'yalla-save.json';
+                                a.click();
+                            } }, 'تصدير النسخة'),
+                        el('button', { class: 'btn danger', style: 'margin-inline-start:8px', onclick: () => {
+                                if (confirm('حذف كل شيء؟')) { localStorage.removeItem('yalla_db_v2');
+                                    localStorage.removeItem('yalla_remember');
+                                    DB.load();
+                                    state.view = 'auth';
+                                    render(); }
+                            } }, 'مسح كل البيانات')
+                    )
+                )
+            );
+        };
+
+        /* ---------- Boot ---------- */
+        render();
+
+        // Expose to console for debugging
+        window._DB = DB;
+        window._Auth = Auth;
+        window._PartyEngine = PartyEngine;
+        window._state = state;
+    </script>
+</body>
+</html>
