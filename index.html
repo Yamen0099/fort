@@ -69,6 +69,7 @@
         }
         .glass {
             background: var(--glass);
+            -webkit-backdrop-filter: blur(18px) saturate(140%);
             backdrop-filter: blur(18px) saturate(140%);
             border: 1px solid var(--glass-brd);
             border-radius: 20px;
@@ -209,6 +210,7 @@
             padding: 14px 20px;
             border-bottom: 1px solid var(--glass-brd);
             background: rgba(10, 7, 30, .6);
+            -webkit-backdrop-filter: blur(20px);
             backdrop-filter: blur(20px);
             z-index: 5;
             flex-wrap: wrap
@@ -340,6 +342,7 @@
             transition: transform .3s, box-shadow .3s;
             transform-style: preserve-3d;
             background: var(--glass);
+            -webkit-backdrop-filter: blur(14px);
             backdrop-filter: blur(14px);
             border: 1px solid var(--glass-brd)
         }
@@ -397,6 +400,7 @@
             position: fixed;
             inset: 0;
             background: rgba(0, 0, 0, .7);
+            -webkit-backdrop-filter: blur(8px);
             backdrop-filter: blur(8px);
             z-index: 100;
             display: flex;
@@ -442,6 +446,7 @@
             border-radius: 12px;
             background: var(--glass);
             border: 1px solid var(--glass-brd);
+            -webkit-backdrop-filter: blur(20px);
             backdrop-filter: blur(20px);
             box-shadow: var(--shadow-neon);
             animation: slideIn .3s;
@@ -3236,7 +3241,7 @@
                         el('label', {}, 'اسم المستخدم'), nameI,
                         el('label', {}, 'البريد'), emailI,
                         isF ? el('p', { style: 'color:gold;font-weight:700;margin:8px 0' },
-                            '👑 حساب مؤسس موثّق ✓') : null,
+                             '👑 حساب مؤسس موثّق ✓') : null,
                         u.title ? el('p', { style: 'color:var(--neon-pink);font-weight:700' }, `🏷️ ${u.title}`) :
                         null,
                         el('button', { class: 'btn danger', style: 'margin-top:12px', onclick: () => {
